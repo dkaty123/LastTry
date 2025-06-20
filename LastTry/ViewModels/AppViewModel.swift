@@ -6,12 +6,14 @@ public class AppViewModel: ObservableObject {
     @Published public var savedScholarships: [Scholarship] = []
     @Published public var userProfile: UserProfile?
     @Published public var hasCompletedOnboarding: Bool = false
+    @Published public var matchedScholarships: [Scholarship] = []
     
     private let savedScholarshipsKey = "savedScholarships"
     private let onboardingKey = "hasCompletedOnboarding"
     
     public init() {
         resetAppState()
+        updateDailyLoginStreak()
     }
     
     private func loadData() {
@@ -81,5 +83,82 @@ public class AppViewModel: ObservableObject {
     
     func clearAllSavedScholarships() {
         savedScholarships.removeAll()
+    }
+    
+    public func updateMatchedScholarships() {
+        guard let profile = userProfile else {
+            // Default list when no profile exists
+            matchedScholarships = scholarships
+                .filter { $0.deadline > Date() }
+                .filter { $0.category == .general || $0.requirements.contains(where: { $0.localizedCaseInsensitiveContains("open to all students") }) }
+                .prefix(10)
+                .map { $0 }
+            return
+        }
+        
+        let isIncomplete = profile.name.isEmpty || profile.fieldOfStudy.isEmpty || profile.gradeLevel.isEmpty || profile.gender.isEmpty || profile.ethnicity.isEmpty
+        if (isIncomplete) {
+            // Default list when profile is incomplete
+            matchedScholarships = scholarships
+                .filter { $0.deadline > Date() }
+                .filter { $0.category == .general || $0.requirements.contains(where: { $0.localizedCaseInsensitiveContains("open to all students") }) }
+                .prefix(10)
+                .map { $0 }
+            return
+        }
+        
+        // Simple matching: check if field of study appears in scholarship name, description, or requirements
+        let fieldOfStudy = profile.fieldOfStudy.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let now = Date()
+        
+        let matches = scholarships
+            .filter { $0.deadline > now }
+            .filter { scholarship in
+                // Check if field of study appears in name, description, requirements, or category (case-insensitive)
+                let scholarshipText = ([scholarship.name, scholarship.category.rawValue, scholarship.description] + scholarship.requirements).joined(separator: " ").lowercased()
+                return scholarshipText.contains(fieldOfStudy)
+            }
+        
+        if matches.isEmpty {
+            // Default list when no matches found
+            matchedScholarships = scholarships
+                .filter { $0.deadline > now }
+                .filter { $0.category == .general || $0.requirements.contains(where: { $0.localizedCaseInsensitiveContains("open to all students") }) }
+                .prefix(10)
+                .map { $0 }
+        } else {
+            matchedScholarships = matches
+        }
+    }
+    
+    // MARK: - Daily Login Streak Logic
+    public func updateDailyLoginStreak() {
+        guard var profile = userProfile else { return }
+        let calendar = Calendar.current
+        let now = Date()
+        if let lastLogin = profile.lastLoginDate {
+            if calendar.isDateInToday(lastLogin) {
+                // Already logged in today, do nothing
+                return
+            } else if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(lastLogin, inSameDayAs: yesterday) {
+                // Continue streak
+                profile.streakCount += 1
+            } else {
+                // Missed a day, reset streak
+                profile.streakCount = 1
+            }
+        } else {
+            // First login
+            profile.streakCount = 1
+        }
+        profile.lastLoginDate = now
+        userProfile = profile
+        UserProfile.save(profile)
+    }
+    
+    // Call this after updateDailyLoginStreak from a View, passing the shared AchievementViewModel
+    func unlockStreakAchievementsIfNeeded(achievementViewModel: AchievementViewModel) {
+        guard let streak = userProfile?.streakCount else { return }
+        achievementViewModel.checkAndUnlockStreakAchievements(streakCount: streak)
     }
 } 

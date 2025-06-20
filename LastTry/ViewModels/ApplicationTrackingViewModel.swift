@@ -19,6 +19,7 @@ class ApplicationTrackingViewModel: ObservableObject {
                 scholarshipName: "Merit Scholarship",
                 status: .inProgress,
                 deadline: Date().addingTimeInterval(86400 * 30),
+                category: .general,
                 documents: [
                     ApplicationDocument(id: UUID(), name: "Transcript", type: .transcript, isUploaded: true),
                     ApplicationDocument(id: UUID(), name: "Essay", type: .essay, isUploaded: false)
@@ -30,6 +31,7 @@ class ApplicationTrackingViewModel: ObservableObject {
                 scholarshipName: "STEM Excellence Award",
                 status: .accepted,
                 deadline: Date().addingTimeInterval(86400 * 15),
+                category: .stem,
                 documents: [
                     ApplicationDocument(id: UUID(), name: "Transcript", type: .transcript, isUploaded: true),
                     ApplicationDocument(id: UUID(), name: "Essay", type: .essay, isUploaded: true)
@@ -41,6 +43,7 @@ class ApplicationTrackingViewModel: ObservableObject {
                 scholarshipName: "Community Service Grant",
                 status: .notStarted,
                 deadline: Date().addingTimeInterval(86400 * 45),
+                category: .humanities,
                 documents: [
                     ApplicationDocument(id: UUID(), name: "Transcript", type: .transcript, isUploaded: false),
                     ApplicationDocument(id: UUID(), name: "Essay", type: .essay, isUploaded: false)

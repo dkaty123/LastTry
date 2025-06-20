@@ -109,7 +109,7 @@ struct FinancialPlanningView: View {
                 .foregroundColor(Theme.textColor)
             
             ForEach(viewModel.financialPlan.expenses) { expense in
-                ExpenseRow(expense: expense)
+                ExpenseRow(viewModel: viewModel, expense: expense)
             }
             
             if viewModel.financialPlan.expenses.isEmpty {
@@ -135,7 +135,7 @@ struct FinancialPlanningView: View {
                 .foregroundColor(Theme.textColor)
             
             ForEach(viewModel.financialPlan.scholarships) { scholarship in
-                ScholarshipRow(scholarship: scholarship)
+                ScholarshipRow(viewModel: viewModel, scholarship: scholarship)
             }
             
             if viewModel.financialPlan.scholarships.isEmpty {
@@ -276,7 +276,10 @@ struct FinancialCard: View {
 }
 
 struct ExpenseRow: View {
+    @ObservedObject var viewModel: FinancialPlanningViewModel
     let expense: FinancialPlan.Expense
+    @State private var isEditing = false
+    @State private var inputValue: String = ""
     
     var body: some View {
         HStack {
@@ -289,14 +292,28 @@ struct ExpenseRow: View {
                     .font(.caption)
                     .foregroundColor(Theme.textColor.opacity(0.6))
             }
-            
             Spacer()
-            
             VStack(alignment: .trailing) {
-                Text(expense.amount, format: .currency(code: "USD"))
+                if isEditing {
+                    TextField("Amount", text: $inputValue, onCommit: {
+                        if let value = Double(inputValue) {
+                            viewModel.updateExpenseAmount(expenseId: expense.id, newAmount: value)
+                        }
+                        isEditing = false
+                    })
+                    .keyboardType(.decimalPad)
                     .font(.headline)
                     .foregroundColor(Theme.textColor)
-                
+                    .multilineTextAlignment(.trailing)
+                    .onAppear { inputValue = String(format: "%.2f", expense.amount) }
+                } else {
+                    Text(expense.amount, format: .currency(code: "USD"))
+                        .font(.headline)
+                        .foregroundColor(Theme.textColor)
+                        .onTapGesture {
+                            isEditing = true
+                        }
+                }
                 Text(expense.frequency.rawValue)
                     .font(.caption)
                     .foregroundColor(Theme.textColor.opacity(0.6))
@@ -309,7 +326,10 @@ struct ExpenseRow: View {
 }
 
 struct ScholarshipRow: View {
+    @ObservedObject var viewModel: FinancialPlanningViewModel
     let scholarship: FinancialPlan.ScholarshipAmount
+    @State private var isEditing = false
+    @State private var inputValue: String = ""
     
     var body: some View {
         HStack {
@@ -322,18 +342,36 @@ struct ScholarshipRow: View {
                     .font(.caption)
                     .foregroundColor(scholarship.isConfirmed ? Theme.successColor : .orange)
             }
-            
             Spacer()
-            
-            Text(scholarship.amount, format: .currency(code: "USD"))
+            if isEditing {
+                TextField("Amount", text: $inputValue, onCommit: {
+                    if let value = Double(inputValue) {
+                        viewModel.updateScholarshipAmount(scholarshipId: scholarship.id, newAmount: value)
+                    }
+                    isEditing = false
+                })
+                .keyboardType(.decimalPad)
                 .font(.headline)
                 .foregroundColor(Theme.textColor)
-        }
+                .multilineTextAlignment(.trailing)
+                .onAppear { inputValue = String(format: "%.2f", scholarship.amount) }
+            } else {
+                Text(scholarship.amount, format: .currency(code: "USD"))
+                    .font(.headline)
+                    .foregroundColor(Theme.textColor)
+                    .onTapGesture {
+                        isEditing = true
+                    }
+                }
+            }
+        
         .padding()
         .background(Theme.cardBackground.opacity(0.5))
         .cornerRadius(10)
     }
-}
+ }
+
+
 
 struct AddExpenseView: View {
     @Environment(\.dismiss) private var dismiss

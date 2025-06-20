@@ -1,12 +1,12 @@
 import Foundation
 import SwiftUI
 
-class AchievementViewModel: ObservableObject {
-    @Published var achievements: [Achievement] = []
-    @Published var totalPoints: Int = 0
-    @Published var selectedCategory: AchievementCategory?
+public class AchievementViewModel: ObservableObject {
+    @Published public var achievements: [Achievement] = []
+    @Published public var totalPoints: Int = 0
+    @Published public var selectedCategory: AchievementCategory?
     
-    init() {
+    public init() {
         loadAchievements()
     }
     
@@ -16,11 +16,11 @@ class AchievementViewModel: ObservableObject {
         calculateTotalPoints()
     }
     
-    func calculateTotalPoints() {
+    public func calculateTotalPoints() {
         totalPoints = achievements.filter { $0.isUnlocked }.reduce(0) { $0 + $1.points }
     }
     
-    func unlockAchievement(_ achievement: Achievement) {
+    public func unlockAchievement(_ achievement: Achievement) {
         if let index = achievements.firstIndex(where: { $0.id == achievement.id }) {
             var updatedAchievement = achievement
             updatedAchievement = Achievement(
@@ -38,14 +38,29 @@ class AchievementViewModel: ObservableObject {
         }
     }
     
-    func filterAchievements(by category: AchievementCategory?) {
+    public func filterAchievements(by category: AchievementCategory?) {
         selectedCategory = category
     }
     
-    var filteredAchievements: [Achievement] {
+    public var filteredAchievements: [Achievement] {
         guard let category = selectedCategory else {
             return achievements
         }
         return achievements.filter { $0.category == category }
+    }
+    
+    // Call this after updating streakCount
+    public func checkAndUnlockStreakAchievements(streakCount: Int) {
+        let streakMilestones = [3, 7, 14, 30, 100]
+        guard streakMilestones.contains(streakCount) else { return }
+        if let achievement = achievements.first(where: { achievement in
+            (achievement.title.contains("3-Day") && streakCount == 3) ||
+            (achievement.title.contains("7-Day") && streakCount == 7) ||
+            (achievement.title.contains("14-Day") && streakCount == 14) ||
+            (achievement.title.contains("30-Day") && streakCount == 30) ||
+            (achievement.title.contains("Coffee Chat") && streakCount == 100)
+        }), !achievement.isUnlocked {
+            unlockAchievement(achievement)
+        }
     }
 } 

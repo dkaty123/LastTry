@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var viewModel: AppViewModel
+    @EnvironmentObject private var achievementViewModel: AchievementViewModel
     @State private var offset = CGSize.zero
     @State private var currentIndex = 0
     @State private var showSearch = false
@@ -164,6 +165,8 @@ struct HomeView: View {
                 SmartSearchView()
             }
             .onAppear {
+                viewModel.updateDailyLoginStreak()
+                viewModel.unlockStreakAchievementsIfNeeded(achievementViewModel: achievementViewModel)
                 withAnimation(.easeIn(duration: 0.3)) {
                     isAnimating = true
                 }
@@ -217,4 +220,5 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environmentObject(AppViewModel())
+        .environmentObject(AchievementViewModel())
 } 

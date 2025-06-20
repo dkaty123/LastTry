@@ -8,6 +8,9 @@ public struct UserProfile: Codable {
     public var gradeLevel: String
     public var gpa: Double?
     public var avatarType: AvatarType
+    // Daily login streak properties
+    public var streakCount: Int
+    public var lastLoginDate: Date?
     
     public enum AvatarType: String, Codable {
         case cat
@@ -16,7 +19,7 @@ public struct UserProfile: Codable {
         case dog
     }
     
-    public init(name: String, gender: String, ethnicity: String, fieldOfStudy: String, gradeLevel: String, gpa: Double? = nil, avatarType: AvatarType) {
+    public init(name: String, gender: String, ethnicity: String, fieldOfStudy: String, gradeLevel: String, gpa: Double? = nil, avatarType: AvatarType, streakCount: Int = 0, lastLoginDate: Date? = nil) {
         self.name = name
         self.gender = gender
         self.ethnicity = ethnicity
@@ -24,6 +27,8 @@ public struct UserProfile: Codable {
         self.gradeLevel = gradeLevel
         self.gpa = gpa
         self.avatarType = avatarType
+        self.streakCount = streakCount
+        self.lastLoginDate = lastLoginDate
     }
 }
 

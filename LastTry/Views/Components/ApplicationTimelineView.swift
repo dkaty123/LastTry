@@ -167,9 +167,9 @@ struct ApplicationEditSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         if let application = application {
-                            viewModel.updateApplication(ScholarshipApplication(id: application.id, scholarshipName: scholarshipName, status: status, deadline: deadline, documents: application.documents, milestones: application.milestones))
+                            viewModel.updateApplication(ScholarshipApplication(id: application.id, scholarshipName: scholarshipName, status: status, deadline: deadline, category: application.category, documents: application.documents, milestones: application.milestones))
                         } else {
-                            viewModel.addApplication(ScholarshipApplication(scholarshipName: scholarshipName, status: status, deadline: deadline))
+                            viewModel.addApplication(ScholarshipApplication(scholarshipName: scholarshipName, status: status, deadline: deadline, category: .general))
                         }
                         dismiss()
                     }

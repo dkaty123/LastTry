@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Scholarship: Identifiable, Codable {
+public struct Scholarship: Identifiable, Codable, Equatable {
     public let id: UUID
     public let name: String
     public let amount: Double
@@ -10,7 +10,7 @@ public struct Scholarship: Identifiable, Codable {
     public let requirements: [String]
     public let website: String?
     
-    public enum ScholarshipCategory: String, Codable {
+    public enum ScholarshipCategory: String, Codable, CaseIterable, Equatable {
         case stem
         case arts
         case humanities

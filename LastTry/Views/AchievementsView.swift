@@ -128,16 +128,6 @@ struct AchievementCard: View {
     }
 }
 
-extension AchievementCategory: CaseIterable {
-    static var allCases: [AchievementCategory] = [
-        .application,
-        .scholarship,
-        .profile,
-        .community,
-        .special
-    ]
-}
-
 #Preview {
     NavigationStack {
         AchievementsView()

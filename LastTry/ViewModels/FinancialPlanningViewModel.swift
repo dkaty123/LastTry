@@ -77,4 +77,20 @@ class FinancialPlanningViewModel: ObservableObject {
     func updateTotalCost(_ amount: Double) {
         financialPlan.totalCost = amount
     }
+    
+    func updateExpenseAmount(expenseId: UUID, newAmount: Double) {
+        if let idx = financialPlan.expenses.firstIndex(where: { $0.id == expenseId }) {
+            var updated = financialPlan.expenses[idx]
+            updated = FinancialPlan.Expense(id: updated.id, name: updated.name, amount: newAmount, category: updated.category, frequency: updated.frequency, isRecurring: updated.isRecurring)
+            financialPlan.expenses[idx] = updated
+        }
+    }
+    
+    func updateScholarshipAmount(scholarshipId: UUID, newAmount: Double) {
+        if let idx = financialPlan.scholarships.firstIndex(where: { $0.id == scholarshipId }) {
+            var updated = financialPlan.scholarships[idx]
+            updated = FinancialPlan.ScholarshipAmount(id: updated.id, scholarshipId: updated.scholarshipId, amount: newAmount, isConfirmed: updated.isConfirmed)
+            financialPlan.scholarships[idx] = updated
+        }
+    }
 } 

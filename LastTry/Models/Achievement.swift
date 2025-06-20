@@ -1,16 +1,16 @@
 import Foundation
 
-struct Achievement: Identifiable, Codable {
-    let id: UUID
-    let title: String
-    let description: String
-    let icon: String
-    let points: Int
-    let category: AchievementCategory
-    let isUnlocked: Bool
-    let unlockedDate: Date?
+public struct Achievement: Identifiable, Codable {
+    public let id: UUID
+    public let title: String
+    public let description: String
+    public let icon: String
+    public let points: Int
+    public let category: AchievementCategory
+    public let isUnlocked: Bool
+    public let unlockedDate: Date?
     
-    init(id: UUID = UUID(), title: String, description: String, icon: String, points: Int, category: AchievementCategory, isUnlocked: Bool = false, unlockedDate: Date? = nil) {
+    public init(id: UUID = UUID(), title: String, description: String, icon: String, points: Int, category: AchievementCategory, isUnlocked: Bool = false, unlockedDate: Date? = nil) {
         self.id = id
         self.title = title
         self.description = description
@@ -22,50 +22,58 @@ struct Achievement: Identifiable, Codable {
     }
 }
 
-enum AchievementCategory: String, Codable {
+public enum AchievementCategory: String, Codable, CaseIterable {
     case application = "Application"
     case scholarship = "Scholarship"
     case profile = "Profile"
     case community = "Community"
     case special = "Special"
+
+    public static var allCases: [AchievementCategory] = [
+        .application,
+        .scholarship,
+        .profile,
+        .community,
+        .special
+    ]
 }
 
 // Sample achievements
 extension Achievement {
     static let sampleAchievements: [Achievement] = [
         Achievement(
-            title: "First Launch",
-            description: "Complete your first scholarship application",
-            icon: "rocket.fill",
+            title: "3-Day Streak!",
+            description: "Logged in for 3 days in a row. Keep it up!",
+            icon: "flame.fill",
+            points: 50,
+            category: .special
+        ),
+        Achievement(
+            title: "7-Day Streak!",
+            description: "A whole week of daily logins. You're on fire!",
+            icon: "sun.max.fill",
             points: 100,
-            category: .application
+            category: .special
         ),
         Achievement(
-            title: "Stellar Profile",
-            description: "Complete your profile with all required information",
-            icon: "star.fill",
-            points: 150,
-            category: .profile
-        ),
-        Achievement(
-            title: "Scholarship Explorer",
-            description: "Apply to 5 different scholarships",
-            icon: "globe.americas.fill",
+            title: "14-Day Streak!",
+            description: "Two weeks of consistency. Impressive!",
+            icon: "calendar",
             points: 200,
-            category: .scholarship
+            category: .special
         ),
         Achievement(
-            title: "Community Star",
-            description: "Participate in 3 study group sessions",
-            icon: "person.3.fill",
-            points: 175,
-            category: .community
+            title: "30-Day Streak!",
+            description: "A month of daily logins. You legend!",
+            icon: "crown.fill",
+            points: 500,
+            category: .special
         ),
         Achievement(
-            title: "Milestone Master",
-            description: "Earn 1000 total points",
-            icon: "trophy.fill",
-            points: 300,
+            title: "Coffee Chat with a Cracked Waterloo CS Student",
+            description: "You've reached the ultimate 100-day streak. Enjoy a virtual coffee chat with a legendary Waterloo CS student!",
+            icon: "cup.and.saucer.fill",
+            points: 1000,
             category: .special
         )
     ]

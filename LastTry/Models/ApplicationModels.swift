@@ -6,14 +6,16 @@ struct ScholarshipApplication: Identifiable, Equatable {
     var scholarshipName: String
     var status: ApplicationStatus
     var deadline: Date
+    var category: Scholarship.ScholarshipCategory
     var documents: [ApplicationDocument]
     var milestones: [ApplicationMilestone]
     
-    init(id: UUID = UUID(), scholarshipName: String, status: ApplicationStatus = .inProgress, deadline: Date, documents: [ApplicationDocument] = [], milestones: [ApplicationMilestone] = []) {
+    init(id: UUID = UUID(), scholarshipName: String, status: ApplicationStatus = .inProgress, deadline: Date, category: Scholarship.ScholarshipCategory, documents: [ApplicationDocument] = [], milestones: [ApplicationMilestone] = []) {
         self.id = id
         self.scholarshipName = scholarshipName
         self.status = status
         self.deadline = deadline
+        self.category = category
         self.documents = documents
         self.milestones = milestones
     }

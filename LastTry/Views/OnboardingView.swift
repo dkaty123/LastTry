@@ -131,7 +131,7 @@ struct OnboardingView: View {
             }
         }
         .fullScreenCover(isPresented: $showProfileSetup) {
-            ProfileSetupView()
+            ProfileSetupView(isOnboarding: true)
         }
     }
 }

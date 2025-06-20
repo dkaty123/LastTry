@@ -10,6 +10,14 @@ struct ApplicationStatusDashboardView: View {
         return [Array(all.prefix(3)), Array(all.suffix(2))]
     }
     
+    var statusCountsArray: [[(status: ApplicationStatus, count: Int)]] {
+        statusGrid.map { row in
+            row.map { status in
+                (status, viewModel.applications.filter { $0.status == status }.count)
+            }
+        }
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             Text("Application Status")
@@ -18,56 +26,8 @@ struct ApplicationStatusDashboardView: View {
                 .foregroundColor(.white)
             
             VStack(spacing: 20) {
-                ForEach(0..<statusGrid.count, id: \.self) { row in
-                    HStack(spacing: 20) {
-                        ForEach(statusGrid[row], id: \.self) { status in
-                            VStack(spacing: 10) {
-                                Text("\(viewModel.applications.filter { $0.status == status }.count)")
-                                    .font(.title)
-                                    .bold()
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                
-                                Text(status.rawValue)
-                                    .font(.caption)
-                                    .foregroundColor(.white.opacity(0.8))
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .frame(maxWidth: .infinity)
-                                
-                                HStack(spacing: 16) {
-                                    Button(action: {
-                                        // Add a new application with this status
-                                        let newApp = ScholarshipApplication(
-                                            scholarshipName: "New Scholarship",
-                                            status: status,
-                                            deadline: Date().addingTimeInterval(86400 * 30)
-                                        )
-                                        viewModel.addApplication(newApp)
-                                    }) {
-                                        Image(systemName: "plus.circle.fill")
-                                            .foregroundColor(.green)
-                                            .font(.title2)
-                                    }
-                                    Button(action: {
-                                        // Remove an application with this status (if any)
-                                        if let appToRemove = viewModel.applications.first(where: { $0.status == status }) {
-                                            viewModel.deleteApplication(appToRemove)
-                                        }
-                                    }) {
-                                        Image(systemName: "minus.circle.fill")
-                                            .foregroundColor(.red)
-                                            .font(.title2)
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 90)
-                            .padding()
-                            .background(status.color.opacity(0.2))
-                            .cornerRadius(15)
-                        }
-                    }
+                ForEach(0..<statusCountsArray.count, id: \.self) { row in
+                    StatusRowView(statusCounts: statusCountsArray[row])
                 }
             }
         }
@@ -82,6 +42,45 @@ struct ApplicationStatusDashboardView: View {
             }
             statusCounts = initialCounts
         }
+    }
+}
+
+private struct StatusRowView: View {
+    let statusCounts: [(status: ApplicationStatus, count: Int)]
+    
+    var body: some View {
+        HStack(spacing: 20) {
+            ForEach(statusCounts, id: \.status) { item in
+                StatusCellView(status: item.status, count: item.count)
+            }
+        }
+    }
+}
+
+private struct StatusCellView: View {
+    let status: ApplicationStatus
+    let count: Int
+    
+    var body: some View {
+        VStack(spacing: 10) {
+            Text("\(count)")
+                .font(.title)
+                .bold()
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+            
+            Text(status.rawValue)
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
+        }
+        .frame(maxWidth: .infinity, minHeight: 90)
+        .padding()
+        .background(status.color.opacity(0.2))
+        .cornerRadius(15)
     }
 }
 

@@ -34,29 +34,23 @@ struct MainNavigationView: View {
                         }
                         .tag(0)
                     
+                    ScholarshipMatchView()
+                        .tabItem {
+                            Label("Cosmic Match", systemImage: "sparkles")
+                        }
+                        .tag(1)
+                    
                     SavedScholarshipsView()
                         .tabItem {
                             Label("Saved", systemImage: "bookmark.fill")
                         }
-                        .tag(1)
-                    
-                    ApplicationTrackingView()
-                        .tabItem {
-                            Label("Tracking", systemImage: "chart.bar.fill")
-                        }
                         .tag(2)
                     
-                    FinancialPlanningView()
+                    MoreTabView()
                         .tabItem {
-                            Label("Financial", systemImage: "dollarsign.circle.fill")
+                            Label("More", systemImage: "ellipsis.circle")
                         }
                         .tag(3)
-                    
-                    AchievementsView()
-                        .tabItem {
-                            Label("Achievements", systemImage: "trophy.fill")
-                        }
-                        .tag(4)
                 }
                 .tint(.white)
             }

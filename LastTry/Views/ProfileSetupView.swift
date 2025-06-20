@@ -72,6 +72,7 @@ class ProfileParticleManager: ObservableObject {
 
 struct ProfileSetupView: View {
     @EnvironmentObject private var viewModel: AppViewModel
+    @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var gender = ""
     @State private var ethnicity = ""
@@ -83,6 +84,12 @@ struct ProfileSetupView: View {
     @State private var currentStep = 0
     @State private var showConfetti = false
     @State private var showAchievement = false
+    
+    let isOnboarding: Bool
+    
+    init(isOnboarding: Bool = false) {
+        self.isOnboarding = isOnboarding
+    }
     
     private let gradeLevels = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate"]
     private let steps = ["Avatar", "Basic Info", "Education"]
@@ -173,7 +180,9 @@ struct ProfileSetupView: View {
                     }
         }
         .fullScreenCover(isPresented: $showHome) {
+            if isOnboarding {
             HomeView()
+        }
         }
         .overlay(
             ProfileConfettiView()
@@ -308,9 +317,14 @@ struct ProfileSetupView: View {
         UserProfile.save(profile)
         viewModel.userProfile = profile
         viewModel.completeOnboarding()
+        viewModel.updateMatchedScholarships()
         showConfetti = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            if isOnboarding {
         showHome = true
+            } else {
+                dismiss()
+            }
         }
     }
     
