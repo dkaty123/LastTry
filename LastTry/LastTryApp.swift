@@ -14,15 +14,9 @@ struct LastTryApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if viewModel.hasCompletedOnboarding {
-                MainNavigationView()
-                    .environmentObject(viewModel)
-                    .environmentObject(achievementViewModel)
-            } else {
-                SplashView()
-                    .environmentObject(viewModel)
-                    .environmentObject(achievementViewModel)
-            }
+            MainNavigationView()
+                .environmentObject(viewModel)
+                .environmentObject(achievementViewModel)
         }
     }
 }

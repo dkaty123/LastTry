@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct MainNavigationView: View {
+    @EnvironmentObject private var viewModel: AppViewModel
     @State private var selectedTab = 0
     @State private var showSearch = false
     @State private var showNotifications = false
+    @State private var showSplash = true
     
     init() {
         // Configure tab bar appearance
@@ -22,6 +24,22 @@ struct MainNavigationView: View {
     }
     
     var body: some View {
+        Group {
+            if showSplash {
+                ScholarSwiperSplashView(onLaunch: {
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        showSplash = false
+                    }
+                })
+            } else if !viewModel.hasCompletedOnboarding {
+                OnboardingView()
+            } else {
+                mainAppView
+            }
+        }
+    }
+    
+    private var mainAppView: some View {
         NavigationStack {
             ZStack {
                 Theme.primaryGradient

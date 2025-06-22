@@ -1,0 +1,607 @@
+import SwiftUI
+import CoreMotion
+
+struct ScholarSwiperSplashView: View {
+    var onLaunch: (() -> Void)? = nil
+    @State private var capOffset: CGFloat = 0
+    @State private var capBounce = false
+    @State private var shimmerPhase: CGFloat = 0
+    @State private var taglineOpacity: Double = 0
+    @State private var typingText: String = ""
+    @State private var showMain = false
+    @State private var showOnboarding = false
+    @State private var rocketLaunched = false
+    @State private var launchedRockets: [UUID] = []
+    @State private var showButtonPulse = false
+    @State private var showButtonPulse2 = false
+    @State private var iconPop = false
+    @State private var diamondLaunched = false
+    @State private var cardLaunched = false
+    @State private var cardPulse = false
+    @ObservedObject private var motion = SplashMotionManager()
+    
+    private let fullTypingText = "Powered by AI · Launching Scholarships..."
+    private let capBounceHeight: CGFloat = -60
+    private let capSize: CGFloat = 90
+    private let logoCardSize: CGFloat = 160
+    private let shimmerDuration: Double = 1.8
+    private let typingSpeed: Double = 0.04
+    
+    var body: some View {
+        ZStack {
+            // Background
+            ScholarSplashBackgroundView(motion: motion)
+                .ignoresSafeArea()
+            // Add moving star field
+            ScholarSplashDriftingStarFieldView()
+            
+            VStack(spacing: 0) {
+                Spacer()
+                ZStack {
+                    // Glassmorphic/Neumorphic Card and overlays
+                    RoundedRectangle(cornerRadius: 36, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    cardPulse ? Color.purple : Color.blue,
+                                    cardPulse ? Color.pink : Color.purple.opacity(0.7)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: logoCardSize, height: logoCardSize)
+                        .overlay(
+                            ZStack {
+                                // Soft spotlight/glow
+                                Circle()
+                                    .fill(RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.25), .clear]), center: .center, startRadius: 10, endRadius: 80))
+                                    .frame(width: 120, height: 120)
+                                // Grad cap icon in the center
+                                Image(systemName: "graduationcap.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 64, height: 64)
+                                    .foregroundColor(.white)
+                                    .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                                    .overlay(
+                                        // Subtle white outer glow
+                                        Circle()
+                                            .stroke(Color.white.opacity(0.45), lineWidth: 10)
+                                            .blur(radius: 8)
+                                    )
+                            }
+                        )
+                       
+                        .shadow(color: Color.purple.opacity(0.18), radius: 24, x: 0, y: 12)
+                        .padding(.bottom, 8)
+                        .glassEffect()
+                        .animation(Animation.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: cardPulse)
+                        .onAppear {
+                            cardPulse.toggle()
+                            withAnimation(Animation.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                                cardPulse.toggle()
+                            }
+                        }
+                    // Top diamond (kept)
+                 
+                    // Connecting line from diamond to cap
+                //    ScholarSplashDiamondLineView(cardSize: logoCardSize)
+                    // Cap Logo (replaces lower/loading diamond)
+                 //  ScholarCapLogoView(size: capSize, offset: capOffset, bounce: capBounce, shimmerPhase: shimmerPhase)
+                }
+                .offset(y: cardLaunched ? -UIScreen.main.bounds.height * 0.5 : 0)
+                .animation(.easeInOut(duration: 3.0), value: cardLaunched)
+                // App Name
+                Text("ScholarSwiper")
+                    .font(Font.custom("SF Pro Rounded", size: 36).weight(.bold))
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 2)
+                    .padding(.top, 2)
+                // Tagline
+                Text("Swipe. Match. Fund Your Future.")
+                    .font(Font.custom("Avenir Next", size: 18).weight(.medium))
+                    .foregroundColor(.white.opacity(0.92))
+                    .opacity(taglineOpacity)
+                    .padding(.top, 4)
+                Spacer()
+                // Rocket Launch Button
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.7)) {
+                        rocketLaunched = true
+                        // ... (other animation state if needed)
+                    }
+                    // Launch multiple rockets
+                   
+                    // Delay for rocket animation, then call onLaunch after 3 seconds
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        print("[Splash] onLaunch called")
+                        onLaunch?()
+                    }
+                }) {
+                    ZStack {
+                        // Double pulse/ripple effect
+                        if showButtonPulse2 {
+                            Circle()
+                                .stroke(LinearGradient(gradient: Gradient(colors: [Color.purple.opacity(0.5), Color.blue.opacity(0.3), .clear]), startPoint: .top, endPoint: .bottom), lineWidth: 12)
+                                .frame(width: 120, height: 120)
+                                .scaleEffect(showButtonPulse2 ? 1.9 : 1.0)
+                                .opacity(showButtonPulse2 ? 0 : 0.5)
+                                .animation(Animation.easeOut(duration: 0.9), value: showButtonPulse2)
+                        }
+                        if showButtonPulse {
+                            Circle()
+                                .stroke(LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.7), Color.purple.opacity(0.3), .clear]), startPoint: .top, endPoint: .bottom), lineWidth: 8)
+                                .frame(width: 90, height: 90)
+                                .scaleEffect(showButtonPulse ? 1.7 : 1.0)
+                                .opacity(showButtonPulse ? 0 : 0.7)
+                                .animation(Animation.easeOut(duration: 0.7), value: showButtonPulse)
+                        }
+                        // Rocket launch animation: show multiple small rockets when launching
+                        ForEach(launchedRockets, id: \.self) { rocketID in
+                            AnimatedRocketView()
+                        }
+                        // Animated glowing fingerprint background
+                        FingerprintShape()
+                            .stroke(
+                                LinearGradient(gradient: Gradient(colors: [Color.purple.opacity(0.7), Color.blue.opacity(0.5), Color.white.opacity(0.7)]), startPoint: .topLeading, endPoint: .bottomTrailing),
+                                lineWidth: 3.5
+                            )
+                            .frame(width: 80, height: 80)
+                            .blur(radius: rocketLaunched ? 0 : 0.5)
+                            .scaleEffect(rocketLaunched ? 1.2 : 1.0)
+                            .opacity(rocketLaunched ? 0.2 : 1)
+                            .shadow(color: Color.purple.opacity(0.25), radius: 16, x: 0, y: 8)
+                            .shadow(color: Color.blue.opacity(0.18), radius: 8, x: 0, y: 2)
+                            .animation(Animation.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: rocketLaunched)
+                        // Fingerprint icon (replaces rocket)
+                        Image(systemName: "touchid")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 44, height: 44)
+                            .foregroundColor(.white)
+                            .shadow(color: Color.purple.opacity(0.7), radius: 18, x: 0, y: 8)
+                            .shadow(color: Color.blue.opacity(0.5), radius: 8, x: 0, y: 2)
+                            .scaleEffect(iconPop ? 1.22 : (rocketLaunched ? 1.3 : 1.0))
+                            .opacity(rocketLaunched ? 0 : 1)
+                            .animation(.spring(response: 0.28, dampingFraction: 0.45), value: iconPop)
+                            .animation(.easeInOut(duration: 0.7), value: rocketLaunched)
+                            .overlay(
+                                // Animated glow
+                                Circle()
+                                    .stroke(Color.white.opacity(rocketLaunched ? 0.0 : 0.7), lineWidth: 6)
+                                    .scaleEffect(rocketLaunched ? 1.7 : 1.2)
+                                    .blur(radius: 8)
+                                    .opacity(rocketLaunched ? 0 : 1)
+                                    .animation(.easeInOut(duration: 0.7), value: rocketLaunched)
+                            )
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
+                .accessibilityLabel("Launch ScholarSwiper")
+                .offset(y: -16)
+                .padding(.bottom, 18)
+                .opacity(showOnboarding ? 0 : 1)
+                .disabled(showOnboarding)
+                .onAppear {
+                    launchedRockets = []
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .onAppear {
+            // Animate cap bounce
+            withAnimation(.interpolatingSpring(stiffness: 110, damping: 8).delay(0.2)) {
+                capOffset = capBounceHeight
+                capBounce = true
+            }
+            // Animate shimmer
+            withAnimation(Animation.linear(duration: shimmerDuration).repeatForever(autoreverses: false)) {
+                shimmerPhase = 1
+            }
+            // Tagline fade-in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                withAnimation(.easeIn(duration: 1.0)) {
+                    taglineOpacity = 1
+                }
+            }
+            // Typing effect
+            typingText = ""
+            for (i, char) in fullTypingText.enumerated() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2 + Double(i) * typingSpeed) {
+                    typingText.append(char)
+                }
+            }
+            // Optional: Play chime and haptic
+            // ScholarSplashSoundHaptics.playChimeAndHaptic()
+        }
+        // .onTapGesture {
+        //     // Hero animation: cap flies up and transitions
+        //     withAnimation(.easeInOut(duration: 0.7)) {
+        //         capOffset = -320
+        //         showMain = true
+        //     }
+        //     // Add navigation/transition logic here
+        // }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView().environmentObject(AppViewModel())
+        }
+    }
+}
+
+// MARK: - Background with Parallax & Constellations
+struct ScholarSplashBackgroundView: View {
+    @ObservedObject var motion: SplashMotionManager
+    var body: some View {
+        ZStack {
+            // Gradient background with vignetting
+            LinearGradient(gradient: Gradient(colors: [Color(#colorLiteral(red:0.32, green:0.13, blue:0.56, alpha:1)), Color(#colorLiteral(red:0.07, green:0.09, blue:0.23, alpha:1))]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                .overlay(
+                    RadialGradient(gradient: Gradient(colors: [Color.black.opacity(0.0), Color.black.opacity(0.45)]), center: .center, startRadius: 120, endRadius: 500)
+                )
+                .ignoresSafeArea()
+            // Glowing constellations
+            ScholarConstellationsView(parallax: motion.parallax)
+        }
+    }
+}
+
+// MARK: - Parallax Motion Manager
+class SplashMotionManager: ObservableObject {
+    @Published var parallax: CGSize = .zero
+    private var manager = CMMotionManager()
+    init() {
+        manager.deviceMotionUpdateInterval = 1/30
+        manager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
+            guard let motion = motion else { return }
+            let x = CGFloat(motion.attitude.roll) * 18
+            let y = CGFloat(motion.attitude.pitch) * 18
+            self?.parallax = CGSize(width: x, height: y)
+        }
+    }
+    deinit { manager.stopDeviceMotionUpdates() }
+}
+
+// MARK: - Constellations
+struct ScholarConstellationsView: View {
+    let parallax: CGSize
+    let stars: [ScholarStar] = ScholarStar.generateStars()
+    let lines: [ScholarConstellationLine] = ScholarConstellationLine.generateLines()
+    var body: some View {
+        ZStack {
+            // Lines
+            ForEach(lines) { line in
+                Path { path in
+                    path.move(to: line.start)
+                    path.addLine(to: line.end)
+                }
+                .stroke(Color.white.opacity(0.18), style: StrokeStyle(lineWidth: 1.2, lineCap: .round, dash: [2, 6]))
+                .blur(radius: 0.5)
+                .offset(parallax)
+            }
+            // Stars
+            ForEach(stars) { star in
+                Circle()
+                    .fill(RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.95), Color.purple.opacity(0.3)]), center: .center, startRadius: 0, endRadius: star.radius))
+                    .frame(width: star.radius * 2, height: star.radius * 2)
+                    .shadow(color: Color.purple.opacity(0.18), radius: 8, x: 0, y: 0)
+                    .opacity(star.glow ? 1 : 0.7)
+                    .offset(x: star.x + parallax.width * 0.5, y: star.y + parallax.height * 0.5)
+                    .animation(Animation.easeInOut(duration: 2.5).repeatForever().delay(Double(star.id % 5) * 0.2), value: star.glow)
+            }
+        }
+    }
+}
+
+struct ScholarStar: Identifiable {
+    let id: Int
+    let x: CGFloat
+    let y: CGFloat
+    let radius: CGFloat
+    let glow: Bool
+    static func generateStars() -> [ScholarStar] {
+        (0..<18).map { i in
+            ScholarStar(
+                id: i,
+                x: CGFloat.random(in: -160...160),
+                y: CGFloat.random(in: -320...320),
+                radius: CGFloat.random(in: 2.5...5.5),
+                glow: Bool.random()
+            )
+        }
+    }
+}
+struct ScholarConstellationLine: Identifiable {
+    let id: Int
+    let start: CGPoint
+    let end: CGPoint
+    static func generateLines() -> [ScholarConstellationLine] {
+        [
+            ScholarConstellationLine(id: 0, start: CGPoint(x: -120, y: -80), end: CGPoint(x: 40, y: -120)),
+            ScholarConstellationLine(id: 1, start: CGPoint(x: 40, y: -120), end: CGPoint(x: 120, y: 60)),
+            ScholarConstellationLine(id: 2, start: CGPoint(x: -60, y: 100), end: CGPoint(x: 120, y: 60)),
+            ScholarConstellationLine(id: 3, start: CGPoint(x: -120, y: -80), end: CGPoint(x: -60, y: 100)),
+            ScholarConstellationLine(id: 4, start: CGPoint(x: 0, y: 0), end: CGPoint(x: 40, y: -120)),
+        ]
+    }
+}
+
+// MARK: - Cap Logo with Bounce, Glow, Shimmer
+struct ScholarCapLogoView: View {
+    let size: CGFloat
+    let offset: CGFloat
+    let bounce: Bool
+    let shimmerPhase: CGFloat
+    @State private var starburstPhase: Bool = false
+    @State private var twinklePhases: [Bool] = Array(repeating: false, count: 7)
+    var body: some View {
+        ZStack {
+            // Subtle constellation of twinkling stars
+            ForEach(0..<7) { i in
+                let angle = Double(i) * (360.0 / 7.0)
+                let radius = size * 1.1 + (i % 2 == 0 ? 8 : -6)
+                Circle()
+                    .fill(Color.white.opacity(0.85))
+                    .frame(width: twinklePhases[i] ? 7 : 3.5, height: twinklePhases[i] ? 7 : 3.5)
+                    .blur(radius: twinklePhases[i] ? 0.5 : 1.2)
+                    .opacity(twinklePhases[i] ? 1 : 0.6)
+                    .offset(x: CGFloat(cos(angle * .pi / 180)) * radius, y: CGFloat(sin(angle * .pi / 180)) * radius)
+                    .animation(Animation.easeInOut(duration: 1.2 + Double(i) * 0.13).repeatForever(autoreverses: true), value: twinklePhases[i])
+            }
+            // Cap
+            ScholarCapShape()
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.white, Color.purple.opacity(0.7)]), startPoint: .top, endPoint: .bottom))
+                .frame(width: size, height: size)
+                .shadow(color: Color.purple.opacity(0.35), radius: 16, x: 0, y: 8)
+                .overlay(
+                    ScholarCapShape()
+                        .stroke(Color.white.opacity(0.8), lineWidth: 2.2)
+                )
+                .offset(y: offset)
+            // Light trail/particle (placeholder)
+            if bounce {
+                ScholarCapTrailView(size: size)
+            }
+        }
+        .onAppear {
+            starburstPhase = true
+            for i in 0..<twinklePhases.count {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.18) {
+                    twinklePhases[i] = true
+                }
+            }
+        }
+    }
+}
+
+struct ScholarCapShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        // Mortarboard
+        path.move(to: CGPoint(x: rect.midX - rect.width * 0.45, y: rect.midY - rect.height * 0.18))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.midY - rect.height * 0.38))
+        path.addLine(to: CGPoint(x: rect.midX + rect.width * 0.45, y: rect.midY - rect.height * 0.18))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.midY + rect.height * 0.02))
+        path.closeSubpath()
+        // Tassel
+        path.move(to: CGPoint(x: rect.midX, y: rect.midY - rect.height * 0.38))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.midY + rect.height * 0.32))
+        return path
+    }
+}
+
+struct ScholarCapTrailView: View {
+    let size: CGFloat
+    @State private var animate = false
+    var body: some View {
+        Circle()
+            .fill(LinearGradient(gradient: Gradient(colors: [Color.purple.opacity(0.5), .clear]), startPoint: .top, endPoint: .bottom))
+            .frame(width: size * 0.18, height: size * 0.18)
+            .offset(y: animate ? 40 : 0)
+            .opacity(animate ? 0 : 0.7)
+            .onAppear {
+                withAnimation(Animation.easeOut(duration: 0.7)) {
+                    animate = true
+                }
+            }
+    }
+}
+
+struct ScholarShimmerView: View {
+    let phase: CGFloat
+    var body: some View {
+        LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.1), Color.white.opacity(0.7), Color.white.opacity(0.1)]), startPoint: .topLeading, endPoint: .bottomTrailing)
+            .opacity(0.7)
+            .mask(
+                Rectangle()
+                    .fill(Color.white)
+                    .rotationEffect(.degrees(20))
+                    .offset(x: phase * 120 - 60)
+            )
+            .animation(.linear(duration: 1.8).repeatForever(autoreverses: false), value: phase)
+    }
+}
+
+// MARK: - Glass Effect Modifier
+extension View {
+    func glassEffect() -> some View {
+        self
+            .background(
+                RoundedRectangle(cornerRadius: 36, style: .continuous)
+                    .fill(Color.white.opacity(0.08))
+                    .blur(radius: 6)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 36, style: .continuous)
+                    .stroke(Color.white.opacity(0.13), lineWidth: 1.5)
+            )
+    }
+}
+
+// MARK: - (Optional) Sound & Haptics
+// struct ScholarSplashSoundHaptics {
+//     static func playChimeAndHaptic() {
+//         // Use AVFoundation for sound and CoreHaptics/UIImpactFeedbackGenerator for haptic
+//     }
+// }
+
+// MARK: - Drifting Star Field (smooth, constant motion)
+struct ScholarSplashDriftingStarFieldView: View {
+    @State private var stars: [DriftingStar] = DriftingStar.generateStars()
+    @State private var timer: Timer? = nil
+    let screenWidth = UIScreen.main.bounds.width
+    let screenHeight = UIScreen.main.bounds.height
+    let duration: Double = 10.0
+    var body: some View {
+        ZStack {
+            ForEach(stars) { star in
+                Circle()
+                    .fill(star.color)
+                    .frame(width: star.size, height: star.size)
+                    .position(x: star.position.x, y: star.position.y)
+                    .opacity(star.opacity)
+            }
+        }
+        .onAppear {
+            timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true) { _ in
+                withAnimation(.linear(duration: 1/60)) {
+                    stars = stars.map { star in
+                        var newStar = star
+                        newStar.position.x += newStar.dx
+                        newStar.position.y += newStar.dy
+                        // Loop star to opposite side if off-screen
+                        if newStar.position.x < -20 { newStar.position.x = screenWidth + 20 }
+                        if newStar.position.x > screenWidth + 20 { newStar.position.x = -20 }
+                        if newStar.position.y < -20 { newStar.position.y = screenHeight + 20 }
+                        if newStar.position.y > screenHeight + 20 { newStar.position.y = -20 }
+                        return newStar
+                    }
+                }
+            }
+        }
+        .onDisappear { timer?.invalidate() }
+    }
+}
+
+struct DriftingStar: Identifiable {
+    let id = UUID()
+    var position: CGPoint
+    var size: CGFloat
+    var color: Color
+    var opacity: Double
+    var dx: CGFloat
+    var dy: CGFloat
+    static func generateStars() -> [DriftingStar] {
+        let screenWidth = UIScreen.main.bounds.width
+        let screenHeight = UIScreen.main.bounds.height
+        return (0..<30).map { _ in
+            let angle = Double.random(in: 0...(2 * .pi))
+            let speed: CGFloat = CGFloat.random(in: 0.15...0.35) // slow
+            return DriftingStar(
+                position: CGPoint(x: CGFloat.random(in: 0...screenWidth), y: CGFloat.random(in: 0...screenHeight)),
+                size: CGFloat.random(in: 2...6),
+                color: Color.white.opacity(Double.random(in: 0.3...0.8)),
+                opacity: 1.0,
+                dx: cos(angle) * speed,
+                dy: sin(angle) * speed
+            )
+        }
+    }
+}
+
+// Add new diamond and line components
+struct ScholarSplashDiamondView: View {
+    var body: some View {
+        DiamondShape()
+            .fill(LinearGradient(gradient: Gradient(colors: [Color.white, Color.purple.opacity(0.7)]), startPoint: .top, endPoint: .bottom))
+            .frame(width: 32, height: 32)
+            .shadow(color: Color.purple.opacity(0.25), radius: 8, x: 0, y: 4)
+            .overlay(
+                DiamondShape().stroke(Color.white.opacity(0.7), lineWidth: 2)
+            )
+    }
+}
+
+struct ScholarSplashDiamondLineView: View {
+    let cardSize: CGFloat
+    var body: some View {
+        Path { path in
+            let start = CGPoint(x: cardSize / 2, y: cardSize * 0.12)
+            let end = CGPoint(x: cardSize / 2, y: cardSize * 0.5 - 10)
+            path.move(to: start)
+            path.addLine(to: end)
+        }
+        .stroke(Color.white.opacity(0.5), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+        .frame(width: cardSize, height: cardSize)
+        .offset(y: -cardSize * 0.18)
+    }
+}
+
+struct DiamondShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.midY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+// Add this new shape for the fingerprint design
+struct FingerprintShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let minDimension = min(rect.width, rect.height)
+        let radii: [CGFloat] = [0.22, 0.32, 0.42, 0.52, 0.62] // smaller, so all circles fit
+        for r in radii {
+            let radius = minDimension * r
+            path.addEllipse(in: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
+        }
+        // Add a few vertical lines for fingerprint ridges, also inset
+        for i in 0..<3 {
+            let x = center.x + CGFloat(i - 1) * minDimension * 0.11
+            path.move(to: CGPoint(x: x, y: center.y - minDimension * 0.18))
+            path.addCurve(to: CGPoint(x: x, y: center.y + minDimension * 0.18), control1: CGPoint(x: x - 8, y: center.y), control2: CGPoint(x: x + 8, y: center.y))
+        }
+        return path
+    }
+}
+
+// Add this new view for animated rockets
+struct AnimatedRocketView: View {
+    @State private var yOffset: CGFloat = 0
+    @State private var opacity: Double = 1
+    let startX: CGFloat = CGFloat.random(in: -30...30)
+    let rocketSize: CGFloat = CGFloat.random(in: 18...28)
+    var body: some View {
+        VStack(spacing: 0) {
+            Image(systemName: "rocket.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: rocketSize, height: rocketSize)
+                .foregroundColor(.white)
+                .shadow(color: Color.purple.opacity(0.7), radius: 8, x: 0, y: 2)
+                .shadow(color: Color.blue.opacity(0.5), radius: 4, x: 0, y: 1)
+            Capsule()
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.18), Color.purple.opacity(0.12), .clear]), startPoint: .top, endPoint: .bottom))
+                .frame(width: rocketSize * 0.4, height: rocketSize * 1.2)
+                .opacity(0.7)
+        }
+        .offset(x: startX, y: yOffset)
+        .opacity(opacity)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.7)) {
+                yOffset = -220
+                opacity = 0
+            }
+        }
+    }
+}
+
+#Preview {
+    ScholarSwiperSplashView(onLaunch: nil)
+        .environmentObject(AppViewModel())
+} 

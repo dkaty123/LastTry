@@ -29,6 +29,9 @@ struct MoreTabView: View {
                     NavigationLink(destination: StrategyAnalyticsView()) {
                         MoreCardView(title: "Strategic Insights", icon: "chart.pie.fill", color: .purple)
                     }
+                    NavigationLink(destination: MentorshipMarketplaceView()) {
+                        MoreCardView(title: "Mentorship Marketplace", icon: "person.2.wave.2.fill", color: .purple)
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
