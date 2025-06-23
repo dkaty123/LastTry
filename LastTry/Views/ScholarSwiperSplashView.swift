@@ -27,14 +27,50 @@ struct ScholarSwiperSplashView: View {
     private let shimmerDuration: Double = 1.8
     private let typingSpeed: Double = 0.04
     
+    @State private var animals: [FloatingAstronautAnimal] = [
+        FloatingAstronautAnimal(type: .cat, position: .zero, target: .zero, angle: 0, bob: 0, size: CGSize(width: 64, height: 64)),
+        FloatingAstronautAnimal(type: .dog, position: .zero, target: .zero, angle: 0, bob: 0, size: CGSize(width: 68, height: 68)),
+        FloatingAstronautAnimal(type: .bunny, position: .zero, target: .zero, angle: 0, bob: 0, size: CGSize(width: 66, height: 72))
+    ]
+    
     var body: some View {
         ZStack {
             // Background
             ScholarSplashBackgroundView(motion: motion)
                 .ignoresSafeArea()
+                .zIndex(0)
+            
             // Add moving star field
             ScholarSplashDriftingStarFieldView()
+                .zIndex(1)
             
+            // Add new animated objects
+            ShootingStarView(delay: 1.0)
+                .zIndex(2)
+            ShootingStarView(delay: 2.5)
+                .zIndex(2)
+            CometView(delay: 1.5)
+                .zIndex(1)
+
+            // Add the floating astronaut animals
+            GeometryReader { geo in
+                ForEach(animals.indices, id: \ .self) { i in
+                    let animal = animals[i]
+                    Group {
+                        switch animal.type {
+                        case .cat:
+                            FloatingAstronautCatView(position: animal.position, angle: animal.angle, bob: animal.bob)
+                        case .dog:
+                            FloatingAstronautDogView(position: animal.position, angle: animal.angle, bob: animal.bob)
+                        case .bunny:
+                            FloatingAstronautBunnyView(position: animal.position, angle: animal.angle, bob: animal.bob)
+                        }
+                    }
+                    .frame(width: animal.size.width, height: animal.size.height)
+                    .zIndex(4)
+                }
+            }
+
             VStack(spacing: 0) {
                 Spacer()
                 ZStack {
@@ -187,6 +223,7 @@ struct ScholarSwiperSplashView: View {
                     launchedRockets = []
                 }
             }
+            .zIndex(3)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .onAppear {
@@ -214,6 +251,18 @@ struct ScholarSwiperSplashView: View {
             }
             // Optional: Play chime and haptic
             // ScholarSplashSoundHaptics.playChimeAndHaptic()
+            // Initialize random positions and targets
+            let geoSize = UIScreen.main.bounds.size
+            for i in animals.indices {
+                animals[i].position = randomPoint(in: geoSize, size: animals[i].size)
+                animals[i].target = randomPoint(in: geoSize, size: animals[i].size)
+                animals[i].angle = 0
+                animals[i].bob = 0
+            }
+            // Animation timer
+            Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
+                updateAnimals(in: geoSize)
+            }
         }
         // .onTapGesture {
         //     // Hero animation: cap flies up and transitions
@@ -225,6 +274,62 @@ struct ScholarSwiperSplashView: View {
         // }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView().environmentObject(AppViewModel())
+        }
+    }
+
+    func randomPoint(in size: CGSize, size animalSize: CGSize) -> CGPoint {
+        let padding: CGFloat = 40
+        let topBandHeight: CGFloat = 120
+        let x = CGFloat.random(in: padding...(size.width - padding))
+        let y = CGFloat.random(in: padding...(padding + topBandHeight))
+        return CGPoint(x: x, y: y)
+    }
+
+    func updateAnimals(in geoSize: CGSize) {
+        let speed: CGFloat = 1.2
+        let bobSpeed: CGFloat = 0.08
+        let bobRange: CGFloat = 6
+        for i in animals.indices {
+            var animal = animals[i]
+            // Move toward target
+            let dx = animal.target.x - animal.position.x
+            let dy = animal.target.y - animal.position.y
+            let dist = sqrt(dx*dx + dy*dy)
+            if dist < 8 {
+                animal.target = randomPoint(in: geoSize, size: animal.size)
+            } else {
+                let step = min(speed, dist)
+                let angle = atan2(dy, dx)
+                animal.position.x += cos(angle) * step
+                animal.position.y += sin(angle) * step
+                animal.angle = Double(angle)
+            }
+            // Animate bobbing
+            animal.bob = sin(CGFloat(Date().timeIntervalSinceReferenceDate) * bobSpeed * 60 + CGFloat(i) * 2) * bobRange
+            animals[i] = animal
+        }
+        // Collision/bounce
+        for i in 0..<animals.count {
+            for j in (i+1)..<animals.count {
+                let a = animals[i]
+                let b = animals[j]
+                let minDist = (a.size.width + b.size.width) * 0.45
+                let dx = b.position.x - a.position.x
+                let dy = b.position.y - a.position.y
+                let dist = sqrt(dx*dx + dy*dy)
+                if dist < minDist {
+                    // Bounce: push them apart
+                    let push = (minDist - dist) / 2
+                    let angle = atan2(dy, dx)
+                    animals[i].position.x -= cos(angle) * push
+                    animals[i].position.y -= sin(angle) * push
+                    animals[j].position.x += cos(angle) * push
+                    animals[j].position.y += sin(angle) * push
+                    // Optionally, change their targets for more dynamic bounce
+                    animals[i].target = randomPoint(in: geoSize, size: animals[i].size)
+                    animals[j].target = randomPoint(in: geoSize, size: animals[j].size)
+                }
+            }
         }
     }
 }
@@ -599,6 +704,18 @@ struct AnimatedRocketView: View {
             }
         }
     }
+}
+
+// Shared model for floating astronaut animals
+struct FloatingAstronautAnimal: Identifiable {
+    enum AnimalType { case cat, dog, bunny }
+    let id = UUID()
+    let type: AnimalType
+    var position: CGPoint
+    var target: CGPoint
+    var angle: Double
+    var bob: CGFloat
+    var size: CGSize
 }
 
 #Preview {

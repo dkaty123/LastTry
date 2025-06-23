@@ -98,11 +98,33 @@ struct ScholarshipCardView: View {
                         .foregroundColor(Theme.accentColor)
                         .rotationEffect(.degrees(isAnimating ? 360 : 0))
                         .animation(.spring(response: 0.5, dampingFraction: 0.6), value: isAnimating)
-                    
                     Text("Deadline: \(scholarship.deadline.formatted(date: .long, time: .omitted))")
                         .foregroundColor(.white)
                 }
                 .padding(.vertical, 5)
+                // Countdown widget
+                DeadlineCountdownView(deadline: scholarship.deadline, scholarshipName: scholarship.name, amount: Int(scholarship.amount))
+                // Reminder and Calendar buttons
+                HStack(spacing: 16) {
+                    Button(action: { scheduleDeadlineReminder() }) {
+                        Label("Remind Me", systemImage: "bell.badge.fill")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.purple.opacity(0.25))
+                            .cornerRadius(10)
+                    }
+                    Button(action: { addToCalendar() }) {
+                        Label("Add to Calendar", systemImage: "calendar.badge.plus")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.blue.opacity(0.25))
+                            .cornerRadius(10)
+                    }
+                }
                 
                 if let website = scholarship.website {
                     // Website button with hover effect
@@ -198,6 +220,14 @@ struct ScholarshipCardView: View {
                 )
             }
         }
+    }
+    
+    // MARK: - Reminders & Calendar
+    private func scheduleDeadlineReminder() {
+        // TODO: Implement local notification scheduling for the deadline
+    }
+    private func addToCalendar() {
+        // TODO: Implement calendar export for the deadline
     }
 }
 

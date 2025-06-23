@@ -14,8 +14,8 @@ struct LastTryApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainNavigationView()
-                .environmentObject(viewModel)
+                MainNavigationView()
+                    .environmentObject(viewModel)
                 .environmentObject(achievementViewModel)
         }
     }

@@ -1,5 +1,7 @@
 import SwiftUI
 import MessageUI
+import EventKit
+import EventKitUI
 
 struct SavedScholarshipsView: View {
     @EnvironmentObject private var viewModel: AppViewModel
@@ -107,6 +109,9 @@ struct SavedScholarshipCard: View {
     let scholarship: Scholarship
     let onDelete: () -> Void
     @State private var isExpanded = false
+    @State private var showCalendarSheet = false
+    @State private var calendarEvent: EKEvent? = nil
+    @State private var calendarEventStore: EKEventStore? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -140,6 +145,36 @@ struct SavedScholarshipCard: View {
                 Text(scholarship.deadline, style: .date)
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.6))
+            }
+            
+            // Countdown widget always visible
+            DeadlineCountdownView(deadline: scholarship.deadline, scholarshipName: scholarship.name, amount: Int(scholarship.amount))
+            
+            // Reminder and Calendar buttons
+            HStack(spacing: 16) {
+                Button(action: { scheduleDeadlineReminder() }) {
+                    Label("Remind Me", systemImage: "bell.badge.fill")
+                        .font(.subheadline.bold())
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.purple.opacity(0.25))
+                        .cornerRadius(10)
+                }
+                Button(action: { addToCalendar() }) {
+                    Label("Add to Calendar", systemImage: "calendar.badge.plus")
+                        .font(.subheadline.bold())
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.blue.opacity(0.25))
+                        .cornerRadius(10)
+                }
+            }
+            .sheet(isPresented: $showCalendarSheet) {
+                if let event = calendarEvent, let eventStore = calendarEventStore {
+                    CalendarEventEditView(event: event, eventStore: eventStore) { showCalendarSheet = false }
+                }
             }
             
             if isExpanded {
@@ -199,6 +234,31 @@ struct SavedScholarshipCard: View {
         .cornerRadius(15)
         .padding(.horizontal)
     }
+    
+    // MARK: - Reminders & Calendar
+    private func scheduleDeadlineReminder() {
+        // TODO: Implement local notification scheduling for the deadline
+    }
+    private func addToCalendar() {
+        let eventStore = EKEventStore()
+        eventStore.requestAccess(to: .event) { granted, error in
+            if granted {
+                let event = EKEvent(eventStore: eventStore)
+                event.title = scholarship.name
+                event.startDate = scholarship.deadline
+                event.endDate = scholarship.deadline.addingTimeInterval(3600) // 1 hour
+                event.notes = scholarship.description
+                event.calendar = eventStore.defaultCalendarForNewEvents
+                event.location = ""
+                event.url = scholarship.website != nil ? URL(string: scholarship.website!) : nil
+                calendarEvent = event
+                calendarEventStore = eventStore
+                showCalendarSheet = true
+            } else {
+                // Handle denied access (show alert, etc.)
+            }
+        }
+    }
 }
 
 struct EmptySavedView: View {
@@ -257,6 +317,38 @@ struct MailView: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: MFMailComposeViewController, context: Context) {}
+}
+
+// CalendarEventEditView for presenting EKEventEditViewController
+struct CalendarEventEditView: UIViewControllerRepresentable {
+    let event: EKEvent
+    let eventStore: EKEventStore
+    var onDismiss: () -> Void
+    
+    func makeUIViewController(context: Context) -> EKEventEditViewController {
+        let controller = EKEventEditViewController()
+        controller.event = event
+        controller.eventStore = eventStore
+        controller.editViewDelegate = context.coordinator
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: EKEventEditViewController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onDismiss: onDismiss)
+    }
+    
+    class Coordinator: NSObject, EKEventEditViewDelegate {
+        let onDismiss: () -> Void
+        init(onDismiss: @escaping () -> Void) {
+            self.onDismiss = onDismiss
+        }
+        func eventEditViewController(_ controller: EKEventEditViewController, didCompleteWith action: EKEventEditViewAction) {
+            controller.dismiss(animated: true, completion: nil)
+            onDismiss()
+        }
+    }
 }
 
 #Preview {

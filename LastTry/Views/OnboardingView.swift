@@ -67,30 +67,28 @@ class OnboardingParticleManager: ObservableObject {
 // MARK: - Onboarding View
 struct OnboardingView: View {
     @State private var currentPage = 0
-    @State private var showProfileSetup = false
+    @State private var showGetStarted = false
     @State private var cardPulse = false
-    @State private var showConfetti = false
     @ObservedObject private var motion = SplashMotionManager()
-    @EnvironmentObject private var viewModel: AppViewModel
     @State private var animateBackground = false
     
     private let pages = [
         OnboardingPage(
             title: "Explore the Galaxy of Scholarships",
             description: "Discover amazing opportunities that match your cosmic journey",
-            imageName: "star.circle.fill",
+            avatarType: .cosmicCat,
             accentColor: .yellow
         ),
         OnboardingPage(
             title: "Save the Ones That Match Your Orbit",
             description: "Keep track of scholarships that align with your goals",
-            imageName: "bookmark.circle.fill",
+            avatarType: .spaceDog,
             accentColor: .blue
         ),
         OnboardingPage(
             title: "Launch Your Education Journey!",
             description: "Take the first step towards your stellar future",
-            imageName: "graduationcap.circle.fill",
+            avatarType: .starFox,
             accentColor: .orange
         )
     ]
@@ -113,11 +111,14 @@ struct OnboardingView: View {
                 )
                 .ignoresSafeArea()
             ScholarSplashDriftingStarFieldView()
+            // Add the rocketship above the onboarding content
+            RocketshipView()
+                .zIndex(3)
             VStack {
                 TabView(selection: $currentPage) {
-                    ForEach(0..<pages.count, id: \.self) { index in
+                    ForEach(pages.indices, id: \.self) { index in
                         OnboardingPageView(page: pages[index], cardPulse: $cardPulse, animate: true)
-                            .tag(index)
+                        .tag(index)
                     }
                 }
                 .tabViewStyle(.page)
@@ -129,43 +130,32 @@ struct OnboardingView: View {
                             currentPage += 1
                         }
                     } else {
-                        // Confetti burst, then show profile setup
-                        showConfetti = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                            showProfileSetup = true
-                            showConfetti = false
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            showGetStarted = true
                         }
                     }
                 }) {
-                    ZStack {
-                        if showConfetti {
-                            ConfettiView()
-                                .allowsHitTesting(false)
-                        }
-                        Text(currentPage < pages.count - 1 ? "Next" : "Get Started")
-                            .font(Font.custom("SF Pro Rounded", size: 20).weight(.bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.purple, Color.blue, Color.pink]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
+                    Text(currentPage < pages.count - 1 ? "Next" : "Get Started")
+                        .font(Font.custom("SF Pro Rounded", size: 20).weight(.bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.purple, Color.blue, Color.pink]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
                                     )
-                                    .shadow(color: Color.purple.opacity(0.18), radius: 12, x: 0, y: 6)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .stroke(Color.white.opacity(0.13), lineWidth: 1.5)
-                            )
-                            .scaleEffect(showConfetti ? 1.1 : 1.0)
-                            .opacity(0.98)
-                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: showConfetti)
-                    }
+                                )
+                                .shadow(color: Color.purple.opacity(0.18), radius: 12, x: 0, y: 6)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(Color.white.opacity(0.13), lineWidth: 1.5)
+                        )
+                        .opacity(0.98)
                 }
                 .buttonStyle(PlainButtonStyle())
                 .padding(.horizontal, 24)
@@ -176,17 +166,18 @@ struct OnboardingView: View {
         .onAppear {
             animateBackground = true
         }
-        .fullScreenCover(isPresented: $showProfileSetup) {
+        .fullScreenCover(isPresented: $showGetStarted) {
             ProfileSetupView(isOnboarding: true)
         }
     }
 }
 
 // MARK: - Onboarding Page
-struct OnboardingPage {
+struct OnboardingPage: Identifiable {
+    let id = UUID()
     let title: String
     let description: String
-    let imageName: String
+    let avatarType: AvatarType
     let accentColor: Color
 }
 
@@ -216,16 +207,7 @@ struct OnboardingPageView: View {
                     .frame(width: 140, height: 140)
                     .shadow(color: Color.purple.opacity(0.18), radius: 18, x: 0, y: 8)
                     .overlay(
-                        Circle()
-                            .fill(RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.18), .clear]), center: .center, startRadius: 10, endRadius: 60))
-                            .frame(width: 90, height: 90)
-                    )
-                    .overlay(
-                        Image(systemName: page.imageName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 70, height: 70)
-                            .foregroundColor(.white)
+                        AvatarFactory.createAvatar(type: page.avatarType, size: 100, isInteractive: true)
                             .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
                             .scaleEffect(iconBounce ? 1.15 : 1.0)
                             .animation(.interpolatingSpring(stiffness: 180, damping: 8).delay(0.1), value: iconBounce)
@@ -234,33 +216,29 @@ struct OnboardingPageView: View {
                                     .stroke(Color.white.opacity(0.32), lineWidth: 7)
                                     .blur(radius: 6)
                             )
-                            .overlay(
-                                ScholarShimmerView(phase: shimmerPhase)
-                                    .frame(width: 70, height: 70)
-                                    .opacity(0.5)
-                            )
+                           
                     )
                     .glassEffect()
                     .scaleEffect(showContent ? 1 : 0.8)
                     .opacity(showContent ? 1 : 0)
                     .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
             }
-            // Title
-            Text(page.title)
+                // Title
+                Text(page.title)
                 .font(Font.custom("SF Pro Rounded", size: 30).weight(.bold))
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
                 .shadow(color: Color.purple.opacity(0.18), radius: 6, x: 0, y: 2)
                 .opacity(showContent ? 1 : 0)
                 .offset(y: showContent ? 0 : 20)
                 .animation(.easeOut(duration: 0.6).delay(0.1), value: showContent)
-            // Description
-            Text(page.description)
+                // Description
+                Text(page.description)
                 .font(Font.custom("Avenir Next", size: 18).weight(.medium))
                 .foregroundColor(.white.opacity(0.88))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
                 .opacity(showContent ? 1 : 0)
                 .offset(y: showContent ? 0 : 20)
                 .animation(.easeOut(duration: 0.7).delay(0.18), value: showContent)
@@ -284,5 +262,4 @@ struct OnboardingPageView: View {
 
 #Preview {
     OnboardingView()
-        .environmentObject(AppViewModel())
 } 

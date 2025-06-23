@@ -122,6 +122,12 @@ struct HomeView: View {
                                 .font(.system(size: 20))
                                 .foregroundColor(.white)
                         }
+                        
+                        NavigationLink(destination: SmartFiltersView()) {
+                            Image(systemName: "slider.horizontal.3")
+                                .font(.system(size: 20))
+                                .foregroundColor(.white)
+                        }
                     }
                 }
                 
