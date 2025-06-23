@@ -49,19 +49,19 @@ struct CometView: View {
                 .frame(width: 250, height: 60)
                 .offset(x: 50)
 
-            // Comet Head (Brighter)
+            // Comet Head (Rocky center, glowing edge)
             Circle()
                 .fill(
                     RadialGradient(
-                        gradient: Gradient(colors: [Color.white, Color.white.opacity(0.9), Color.yellow]),
+                        gradient: Gradient(colors: [Color.gray.opacity(0.85), Color.gray.opacity(0.7), Color.yellow.opacity(0.7), Color.orange.opacity(0.5), Color.white.opacity(0.18)]),
                         center: .center,
                         startRadius: 2,
                         endRadius: 20
                     )
                 )
                 .frame(width: 40, height: 40)
-                .shadow(color: .white, radius: 30, x: 0, y: 0)
-                .shadow(color: .orange, radius: 50, x: 0, y: 0)
+                .shadow(color: .yellow.opacity(0.18), radius: 30, x: 0, y: 0)
+                .shadow(color: .orange.opacity(0.22), radius: 50, x: 0, y: 0)
                 .offset(x: 175) // Positioned at the front of the trail
         }
         .rotationEffect(.degrees(-45)) // bottom-left to top-right

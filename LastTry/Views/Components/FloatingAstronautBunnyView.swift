@@ -11,7 +11,7 @@ struct FloatingAstronautBunnyView: View {
             Ellipse()
                 .fill(Color.white)
                 .frame(width: 36, height: 32)
-                .offset(y: 14)
+                .offset(y: 0)
             // Bunny head
             Circle()
                 .fill(Color.white)
@@ -30,12 +30,6 @@ struct FloatingAstronautBunnyView: View {
             // Bunny ears (tall, animated)
             BunnyEarShape().fill(Color.white).frame(width: 8, height: 28).offset(x: -8, y: -22 + bob).rotationEffect(.degrees(-10 + Double(bob)*2))
             BunnyEarShape().fill(Color.white).frame(width: 8, height: 28).offset(x: 8, y: -22 - bob).rotationEffect(.degrees(10 - Double(bob)*2))
-            // Paw (waving)
-            Circle()
-                .fill(Color.white)
-                .frame(width: 10, height: 10)
-                .offset(x: 16, y: 12 + bob)
-                .rotationEffect(.degrees(-bob * 10))
         }
         .frame(width: animalSize.width, height: animalSize.height)
         .rotationEffect(.radians(angle))

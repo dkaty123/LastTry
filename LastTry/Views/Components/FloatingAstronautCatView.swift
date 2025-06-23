@@ -11,7 +11,7 @@ struct FloatingAstronautCatView: View {
             Ellipse()
                 .fill(Color.white)
                 .frame(width: 36, height: 28)
-                .offset(y: 10)
+                .offset(y: 0)
             // Cat head
             Circle()
                 .fill(Color.orange)
@@ -35,12 +35,6 @@ struct FloatingAstronautCatView: View {
                 .fill(Color.orange)
                 .frame(width: 10, height: 12)
                 .offset(x: 8, y: -16)
-            // Paw (waving)
-            Circle()
-                .fill(Color.white)
-                .frame(width: 10, height: 10)
-                .offset(x: -16, y: 10 + bob)
-                .rotationEffect(.degrees(bob * 10))
         }
         .frame(width: animalSize.width, height: animalSize.height)
         .rotationEffect(.radians(angle))

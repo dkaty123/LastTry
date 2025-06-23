@@ -18,6 +18,17 @@ struct ScholarSwiperSplashView: View {
     @State private var diamondLaunched = false
     @State private var cardLaunched = false
     @State private var cardPulse = false
+    @State private var showShuttle = false
+    @State private var shuttleOffset: CGFloat = -300
+    @State private var boarding = false
+    @State private var shuttleTakeoff = false
+    @State private var liningUp = false
+    @State private var animalsInShuttle = false
+    @State private var shuttleArrived = false
+    @State private var shuttleAnimalOpacity: Double = 0.0
+    @State private var animalFalling: [Bool] = [false, false, false]
+    @State private var animalSeated: [Bool] = [false, false, false]
+    @State private var takeoffY: CGFloat = 0.0
     @ObservedObject private var motion = SplashMotionManager()
     
     private let fullTypingText = "Powered by AI · Launching Scholarships..."
@@ -53,23 +64,47 @@ struct ScholarSwiperSplashView: View {
                 .zIndex(1)
 
             // Add the floating astronaut animals
-            GeometryReader { geo in
-                ForEach(animals.indices, id: \ .self) { i in
-                    let animal = animals[i]
-                    Group {
-                        switch animal.type {
-                        case .cat:
-                            FloatingAstronautCatView(position: animal.position, angle: animal.angle, bob: animal.bob)
-                        case .dog:
-                            FloatingAstronautDogView(position: animal.position, angle: animal.angle, bob: animal.bob)
-                        case .bunny:
-                            FloatingAstronautBunnyView(position: animal.position, angle: animal.angle, bob: animal.bob)
+            ZStack { // This ZStack groups the animals and shuttle for takeoff
+                GeometryReader { geo in
+                    let geoSize = geo.size
+                    // Calculate shuttle seat positions (relative to the top band)
+                    let shuttleY: CGFloat = 80
+                    let seatXs: [CGFloat] = [geoSize.width/2 - 50, geoSize.width/2, geoSize.width/2 + 50]
+                    // Animals: floating, lining up, or in shuttle
+                    ForEach(animals.indices, id: \ .self) { i in
+                        let animal = animals[i]
+                        // Animals float, then line up, then fall into seats (no duplicates)
+                        let startPos = liningUp ? CGPoint(x: seatXs[i], y: shuttleY - 30) : animal.position
+                        let endPos = CGPoint(x: seatXs[i], y: shuttleY + 10)
+                        let displayPos: CGPoint = (showShuttle && shuttleArrived && animalSeated[i]) ? endPos : startPos
+                        let displayAngle: Double = 0.0
+                        let displayBob: CGFloat = 0.0
+                        Group {
+                            switch animal.type {
+                            case .cat:
+                                FloatingAstronautCatView(position: displayPos, angle: displayAngle, bob: displayBob)
+                            case .dog:
+                                FloatingAstronautDogView(position: displayPos, angle: displayAngle, bob: displayBob)
+                            case .bunny:
+                                FloatingAstronautBunnyView(position: displayPos, angle: displayAngle, bob: displayBob)
+                            }
                         }
+                        .frame(width: animal.size.width, height: animal.size.height)
+                        .zIndex(4)
+                        .animation(.interpolatingSpring(stiffness: 180, damping: 14), value: displayPos)
                     }
-                    .frame(width: animal.size.width, height: animal.size.height)
-                    .zIndex(4)
+                    // Space shuttle pickup overlays the animals
+                    if showShuttle {
+                        SpaceShuttleView(animals: [AnyView(EmptyView()), AnyView(EmptyView()), AnyView(EmptyView())], showTrail: true)
+                            .offset(x: shuttleOffset, y: shuttleY)
+                            .zIndex(5)
+                            .transition(.move(edge: .leading))
+                            .animation(.easeOut(duration: 1.0), value: shuttleOffset)
+                    }
                 }
             }
+            .offset(y: takeoffY)
+            .animation(.easeInOut(duration: 1.0), value: takeoffY)
 
             VStack(spacing: 0) {
                 Spacer()
@@ -145,13 +180,33 @@ struct ScholarSwiperSplashView: View {
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.7)) {
                         rocketLaunched = true
-                        // ... (other animation state if needed)
                     }
-                    // Launch multiple rockets
-                   
-                    // Delay for rocket animation, then call onLaunch after 3 seconds
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        print("[Splash] onLaunch called")
+                    // Step 1: Animals line up above shuttle
+                    liningUp = true
+                    // Step 2: Shuttle flies in and aligns (empty)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                        showShuttle = true
+                        withAnimation(.easeOut(duration: 1.0)) {
+                            shuttleOffset = 40
+                        }
+                    }
+                    // Step 3: When shuttle stops, animals fall into seats
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) {
+                        shuttleArrived = true
+                        for i in 0..<animalSeated.count {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.18) {
+                                withAnimation(.interpolatingSpring(stiffness: 180, damping: 14)) {
+                                    animalSeated[i] = true
+                                }
+                            }
+                        }
+                    }
+                    // Step 4: Shuttle takes off
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+                        takeoffY = -400
+                    }
+                    // Step 5: Proceed with onboarding
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.1) {
                         onLaunch?()
                     }
                 }) {
@@ -286,23 +341,34 @@ struct ScholarSwiperSplashView: View {
     }
 
     func updateAnimals(in geoSize: CGSize) {
-        let speed: CGFloat = 1.2
-        let bobSpeed: CGFloat = 0.08
+        let speed: CGFloat = 0.45 // much slower
+        let bobSpeed: CGFloat = 0.045
         let bobRange: CGFloat = 6
+        let angleLerp: Double = 0.12 // smooth turning
+        let maxTilt: Double = 0.35 // ~20 degrees in radians
+        let minTargetDist: CGFloat = 60 // pets must always move at least this far
         for i in animals.indices {
             var animal = animals[i]
             // Move toward target
             let dx = animal.target.x - animal.position.x
             let dy = animal.target.y - animal.position.y
             let dist = sqrt(dx*dx + dy*dy)
-            if dist < 8 {
-                animal.target = randomPoint(in: geoSize, size: animal.size)
+            if dist < minTargetDist {
+                // Pick a new target that's far enough away
+                var newTarget: CGPoint
+                repeat {
+                    newTarget = randomPoint(in: geoSize, size: animal.size)
+                } while sqrt(pow(newTarget.x - animal.position.x, 2) + pow(newTarget.y - animal.position.y, 2)) < minTargetDist
+                animal.target = newTarget;
             } else {
                 let step = min(speed, dist)
-                let angle = atan2(dy, dx)
-                animal.position.x += cos(angle) * step
-                animal.position.y += sin(angle) * step
-                animal.angle = Double(angle)
+                let targetAngle = atan2(dy, dx)
+                animal.position.x += cos(targetAngle) * step
+                animal.position.y += sin(targetAngle) * step
+                // Clamp angle to gentle tilt
+                let clampedAngle = max(-maxTilt, min(maxTilt, targetAngle))
+                let delta = clampedAngle - animal.angle
+                animal.angle += delta * angleLerp
             }
             // Animate bobbing
             animal.bob = sin(CGFloat(Date().timeIntervalSinceReferenceDate) * bobSpeed * 60 + CGFloat(i) * 2) * bobRange
@@ -318,16 +384,13 @@ struct ScholarSwiperSplashView: View {
                 let dy = b.position.y - a.position.y
                 let dist = sqrt(dx*dx + dy*dy)
                 if dist < minDist {
-                    // Bounce: push them apart
-                    let push = (minDist - dist) / 2
+                    // Gentle bounce: small push per frame, no abrupt target change
+                    let push = (minDist - dist) * 0.08
                     let angle = atan2(dy, dx)
                     animals[i].position.x -= cos(angle) * push
                     animals[i].position.y -= sin(angle) * push
                     animals[j].position.x += cos(angle) * push
                     animals[j].position.y += sin(angle) * push
-                    // Optionally, change their targets for more dynamic bounce
-                    animals[i].target = randomPoint(in: geoSize, size: animals[i].size)
-                    animals[j].target = randomPoint(in: geoSize, size: animals[j].size)
                 }
             }
         }

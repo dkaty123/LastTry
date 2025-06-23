@@ -11,7 +11,7 @@ struct FloatingAstronautDogView: View {
             Ellipse()
                 .fill(Color.brown.opacity(0.9))
                 .frame(width: 38, height: 30)
-                .offset(y: 12)
+                .offset(y: 0)
             // Dog head
             Circle()
                 .fill(Color.brown)
@@ -30,12 +30,6 @@ struct FloatingAstronautDogView: View {
             // Dog ears (floppy, animated)
             DogEarShape().fill(Color.brown).frame(width: 8, height: 18).offset(x: -10, y: -16 + bob).rotationEffect(.degrees(-20 + Double(bob)*2))
             DogEarShape().fill(Color.brown).frame(width: 8, height: 18).offset(x: 10, y: -16 - bob).rotationEffect(.degrees(20 - Double(bob)*2))
-            // Paw (waving)
-            Circle()
-                .fill(Color.brown.opacity(0.9))
-                .frame(width: 10, height: 10)
-                .offset(x: 16, y: 12 + bob)
-                .rotationEffect(.degrees(-bob * 10))
         }
         .frame(width: animalSize.width, height: animalSize.height)
         .rotationEffect(.radians(angle))

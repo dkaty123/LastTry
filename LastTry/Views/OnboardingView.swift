@@ -71,6 +71,12 @@ struct OnboardingView: View {
     @State private var cardPulse = false
     @ObservedObject private var motion = SplashMotionManager()
     @State private var animateBackground = false
+
+    // State for shuttle animation
+    @State private var shuttlePosition: CGPoint = .zero
+    @State private var shuttleTarget: CGPoint = .zero
+    @State private var shuttleAngle: Double = 0.0
+    @State private var rockingAngle: Double = 0.0 // For gentle rocking
     
     private let pages = [
         OnboardingPage(
@@ -111,9 +117,22 @@ struct OnboardingView: View {
                 )
                 .ignoresSafeArea()
             ScholarSplashDriftingStarFieldView()
-            // Add the rocketship above the onboarding content
-            RocketshipView()
-                .zIndex(3)
+
+            // Add the shuttle with animals, moving randomly
+            GeometryReader { geo in
+                OnboardingShuttleView()
+                    .position(shuttlePosition)
+                    .rotationEffect(.radians(shuttleAngle + rockingAngle))
+                    .onAppear {
+                        // Start the animation
+                        shuttlePosition = randomPoint(in: geo.size)
+                        shuttleTarget = randomPoint(in: geo.size)
+                        moveShuttle(in: geo.size)
+                        animateRocking()
+                    }
+            }
+            .zIndex(3)
+
             VStack {
                 TabView(selection: $currentPage) {
                     ForEach(pages.indices, id: \.self) { index in
@@ -168,6 +187,45 @@ struct OnboardingView: View {
         }
         .fullScreenCover(isPresented: $showGetStarted) {
             ProfileSetupView(isOnboarding: true)
+        }
+    }
+
+    // Functions to animate the shuttle
+    private func randomPoint(in size: CGSize) -> CGPoint {
+        let padding: CGFloat = 80
+        let minY: CGFloat = 40
+        let maxY: CGFloat = 140 // Just above the logo/avatar
+        return CGPoint(
+            x: CGFloat.random(in: padding...(size.width - padding)),
+            y: CGFloat.random(in: minY...maxY)
+        )
+    }
+
+    private func moveShuttle(in size: CGSize) {
+        let dx = shuttleTarget.x - shuttlePosition.x
+        let dy = shuttleTarget.y - shuttlePosition.y
+        // let targetAngle = atan2(dy, dx)
+        let randomDuration = Double.random(in: 6.0...9.0)
+
+        withAnimation(.easeInOut(duration: randomDuration)) {
+            shuttlePosition = shuttleTarget
+            shuttleAngle = 0.0 // Always upright
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + randomDuration) {
+            shuttleTarget = randomPoint(in: size)
+            moveShuttle(in: size)
+        }
+    }
+
+    private func animateRocking() {
+        withAnimation(Animation.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+            rockingAngle = .pi / 18 // ~10 degrees
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
+            withAnimation(Animation.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                rockingAngle = -.pi / 18
+            }
         }
     }
 }
