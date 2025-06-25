@@ -16,13 +16,8 @@ struct SpaceShuttleView: View {
             // Shuttle body
             Capsule()
                 .fill(LinearGradient(gradient: Gradient(colors: [Color.white, Color.gray.opacity(0.7)]), startPoint: .leading, endPoint: .trailing))
-                .frame(width: 220, height: 60)
+                .frame(width: 280, height: 60)
                 .shadow(color: .gray.opacity(0.3), radius: 8, x: 4, y: 4)
-            // Shuttle nose
-            Circle()
-                .fill(Color.gray)
-                .frame(width: 48, height: 48)
-                .offset(x: 100)
             // Shuttle windows (seats)
             HStack(spacing: 18) {
                 ForEach(0..<3) { i in
@@ -38,22 +33,23 @@ struct SpaceShuttleView: View {
                 }
             }
             .offset(x: 30)
-            // Shuttle wings
+            // Shuttle wings (pointing outward)
             TriangleWing()
-                .fill(Color.gray.opacity(0.7))
+                .fill(Color.red.opacity(0.8))
                 .frame(width: 48, height: 28)
-                .offset(x: -70, y: 32)
+                .rotationEffect(.degrees(180))
+                .offset(x: -90, y: 32)
             TriangleWing()
-                .fill(Color.gray.opacity(0.7))
+                .fill(Color.red.opacity(0.8))
                 .frame(width: 48, height: 28)
                 .scaleEffect(x: -1, y: 1)
-                .offset(x: -70, y: -32)
+                .offset(x: -90, y: -32)
             // Shuttle tail fin
             TriangleWing()
                 .fill(Color.gray)
                 .frame(width: 24, height: 38)
                 .rotationEffect(.degrees(90))
-                .offset(x: -110)
+                .offset(x: -140)
             // Flame
             if isTakingOff && !showTrail {
                 Path { path in
@@ -62,11 +58,11 @@ struct SpaceShuttleView: View {
                 }
                 .fill(LinearGradient(gradient: Gradient(colors: [Color.yellow, Color.orange, Color.red.opacity(0.7)]), startPoint: .top, endPoint: .bottom))
                 .frame(width: 28, height: 48)
-                .offset(x: -120)
+                .offset(x: -150)
                 .blur(radius: 4)
             }
         }
-        .frame(width: 260, height: 100)
+        .frame(width: 320, height: 100)
     }
 }
 

@@ -9,85 +9,58 @@ struct SavedScholarshipsView: View {
     @State private var showMailComposer = false
     @State private var mailResult: Result<MFMailComposeResult, Error>? = nil
     @State private var showMailError = false
+    @StateObject private var motion = SplashMotionManager()
     
     var body: some View {
-        NavigationStack {
         ZStack {
-            Theme.primaryGradient
+            ScholarSplashBackgroundView(motion: motion)
                 .ignoresSafeArea()
+            ScholarSplashDriftingStarFieldView()
             
             if viewModel.savedScholarships.isEmpty {
-                    EmptySavedView()
-                } else {
-                    ScrollView {
+                // Empty state view
                 VStack(spacing: 20) {
-                            HStack {
-                                Text("Saved Scholarships")
-                                    .font(.title)
-                                    .bold()
+                    Image(systemName: "star.circle")
+                        .font(.system(size: 60))
                         .foregroundColor(.white)
-                    
-                                Spacer()
-                                
-                                Button(action: { showDeleteConfirmation = true }) {
-                                    Text("Clear All")
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 8)
-                                        .background(Color.red.opacity(0.3))
-                                        .cornerRadius(8)
-                                }
-                            }
-                            .padding(.horizontal)
-                            
-                            Button(action: {
-                                if MFMailComposeViewController.canSendMail() {
-                                    showMailComposer = true
+                    Text("No Saved Scholarships")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                    Text("Start exploring to find your perfect matches!")
+                        .foregroundColor(.white.opacity(0.8))
+                }
             } else {
-                                    showMailError = true
-                                }
-                            }) {
-                                HStack {
-                                    Image(systemName: "envelope.fill")
-                                        .foregroundColor(.white)
-                                    Text("Email My Scholarships")
-                                        .foregroundColor(.white)
-                                }
-                                .padding()
-                                .background(Color.blue.opacity(0.7))
-                                .cornerRadius(12)
-                            }
-                            .padding(.horizontal)
-                            
+                ScrollView {
+                    LazyVStack(spacing: 16) {
                         ForEach(viewModel.savedScholarships) { scholarship in
-                                SavedScholarshipCard(scholarship: scholarship) {
-                                    viewModel.removeSavedScholarship(scholarship)
-                                }
+                            SavedScholarshipCard(scholarship: scholarship)
+                                .padding(.horizontal)
                         }
                     }
-                        .padding(.vertical)
+                    .padding(.top)
                 }
             }
         }
-            .alert("Clear All Saved Scholarships?", isPresented: $showDeleteConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("Clear All", role: .destructive) {
-                    viewModel.clearAllSavedScholarships()
-                }
-            } message: {
-                Text("This action cannot be undone.")
+        .navigationTitle("Saved Scholarships")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Clear All Saved Scholarships?", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear All", role: .destructive) {
+                viewModel.clearAllSavedScholarships()
             }
-            .sheet(isPresented: $showMailComposer) {
-                MailView(
-                    recipients: [],
-                    subject: "My Saved Scholarships",
-                    messageBody: emailBody,
-                    result: $mailResult
-                )
-            }
-            .alert("Mail services are not available on this device.", isPresented: $showMailError) {
-                Button("OK", role: .cancel) { }
-            }
+        } message: {
+            Text("This action cannot be undone.")
+        }
+        .sheet(isPresented: $showMailComposer) {
+            MailView(
+                recipients: [],
+                subject: "My Saved Scholarships",
+                messageBody: emailBody,
+                result: $mailResult
+            )
+        }
+        .alert("Mail services are not available on this device.", isPresented: $showMailError) {
+            Button("OK", role: .cancel) { }
         }
     }
     
@@ -107,7 +80,6 @@ struct SavedScholarshipsView: View {
 
 struct SavedScholarshipCard: View {
     let scholarship: Scholarship
-    let onDelete: () -> Void
     @State private var isExpanded = false
     @State private var showCalendarSheet = false
     @State private var calendarEvent: EKEvent? = nil
@@ -123,7 +95,9 @@ struct SavedScholarshipCard: View {
                 
                 Spacer()
                 
-                Button(action: onDelete) {
+                Button(action: {
+                    // Implement delete action
+                }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.white.opacity(0.7))
                         .font(.title3)

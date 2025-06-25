@@ -64,11 +64,17 @@ struct MainNavigationView: View {
                         }
                         .tag(2)
                     
+                    AvatarGridPageView()
+                        .tabItem {
+                            Label("Avatars", systemImage: "person.3.fill")
+                        }
+                        .tag(3)
+                    
                     MoreTabView()
                         .tabItem {
                             Label("More", systemImage: "ellipsis.circle")
                         }
-                        .tag(3)
+                        .tag(4)
                 }
                 .tint(.white)
             }

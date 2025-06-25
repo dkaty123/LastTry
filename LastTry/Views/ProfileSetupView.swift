@@ -84,8 +84,8 @@ struct ProfileSetupView: View {
     @State private var currentStep = 0
     @State private var showConfetti = false
     @State private var showAchievement = false
-    
     let isOnboarding: Bool
+    @StateObject private var motion = SplashMotionManager()
     
     init(isOnboarding: Bool = false) {
         self.isOnboarding = isOnboarding
@@ -96,10 +96,21 @@ struct ProfileSetupView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            Theme.primaryGradient
+            ScholarSplashBackgroundView(motion: motion)
                 .ignoresSafeArea()
-            
+            ScholarSplashDriftingStarFieldView()
+            // Top right star (slightly lower and more inward)
+            FloatingWinkingStarView(size: 54)
+                .position(x: UIScreen.main.bounds.width - 80, y: 130)
+            // Bottom left star (move further up)
+            FloatingWinkingStarView(size: 38)
+                .position(x: 70, y: UIScreen.main.bounds.height - 260)
+            // Top left planet (lower and more inward)
+            AnimatedPlanetView(size: 60, planetColor: .blue, ringColor: .purple)
+                .position(x: 90, y: 170)
+            // Bottom right planet (move further up)
+            AnimatedPlanetView(size: 44, planetColor: .green, ringColor: .yellow)
+                .position(x: UIScreen.main.bounds.width - 90, y: UIScreen.main.bounds.height - 240)
             VStack(spacing: 20) {
                 // Progress indicator
                 HStack(spacing: 20) {
@@ -119,70 +130,70 @@ struct ProfileSetupView: View {
                 
                 // Step title
                 Text(stepTitle(for: currentStep))
-                    .font(.title2.bold())
+                    .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
                     .foregroundColor(.white)
                 
                 TabView(selection: $currentStep) {
                     // Avatar Selection
-                                avatarSelectionView
+                    avatarSelectionView
                         .tag(0)
                     
                     // Basic Information
-                                basicInfoView
+                    basicInfoView
                         .tag(1)
                     
                     // Education Details
-                                educationView
+                    educationView
                         .tag(2)
-                        }
+                }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                        
-                        // Navigation Buttons
-                        HStack(spacing: 20) {
-                            if currentStep > 0 {
-                                Button(action: { withAnimation { currentStep -= 1 } }) {
+                
+                // Navigation Buttons
+                HStack(spacing: 20) {
+                    if currentStep > 0 {
+                        Button(action: { withAnimation { currentStep -= 1 } }) {
                             HStack {
                                 Image(systemName: "chevron.left")
-                                    Text("Back")
+                                Text("Back")
                             }
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 15)
                                     .fill(Theme.cardBackground)
                             )
-                                }
-                            }
-                            
-                            Button(action: handleNext) {
+                        }
+                    }
+                    
+                    Button(action: handleNext) {
                         HStack {
-                                Text(currentStep < steps.count - 1 ? "Next" : "Launch Profile")
+                            Text(currentStep < steps.count - 1 ? "Next" : "Launch Profile")
                             if currentStep < steps.count - 1 {
                                 Image(systemName: "chevron.right")
                             } else {
                                 Image(systemName: "rocket.fill")
                             }
                         }
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 15)
                                 .fill(Theme.accentColor)
                         )
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.bottom, 30)
                     }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 30)
+            }
         }
         .fullScreenCover(isPresented: $showHome) {
             if isOnboarding {
-            HomeView()
-        }
+                HomeView()
+            }
         }
         .overlay(
             ProfileConfettiView()
@@ -204,37 +215,66 @@ struct ProfileSetupView: View {
     private var avatarSelectionView: some View {
         VStack(spacing: 20) {
             Text("Choose Your Space Explorer")
-                .font(.title2.bold())
+                .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
                 .foregroundColor(.white)
                 .shadow(color: Theme.accentColor.opacity(0.3), radius: 5, x: 0, y: 2)
-            
             HStack(spacing: 20) {
-                ForEach([UserProfile.AvatarType.cat, .dog, .bunny], id: \.self) { avatar in
-                    AvatarButton(
-                        avatar: avatar,
-                        isSelected: selectedAvatar == avatar,
-                        action: { withAnimation { selectedAvatar = avatar } }
-                    )
-                    .scaleEffect(selectedAvatar == avatar ? 1.1 : 1.0)
-                    .animation(.spring(response: 0.3), value: selectedAvatar)
+                ForEach([UserProfile.AvatarType.cat, .fox, .dog], id: \.self) { avatar in
+                    VStack {
+                        switch avatar {
+                        case .cat:
+                            AstronautCatView(size: 100)
+                                .scaleEffect(selectedAvatar == avatar ? 1.1 : 1.0)
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedAvatar == avatar ? Theme.accentColor : Color.clear, lineWidth: 3)
+                                        .frame(width: 110, height: 110)
+                                )
+                                .id("cat_avatar")
+                        case .fox:
+                            AstronautFoxView(size: 100)
+                                .scaleEffect(selectedAvatar == avatar ? 1.1 : 1.0)
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedAvatar == avatar ? Theme.accentColor : Color.clear, lineWidth: 3)
+                                        .frame(width: 110, height: 110)
+                                )
+                                .id("fox_avatar")
+                        case .dog:
+                            AstronautDogView(size: 100)
+                                .scaleEffect(selectedAvatar == avatar ? 1.1 : 1.0)
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedAvatar == avatar ? Theme.accentColor : Color.clear, lineWidth: 3)
+                                        .frame(width: 110, height: 110)
+                                )
+                                .id("dog_avatar")
+                        }
+                    }
+                    .onTapGesture {
+                        withAnimation(.spring()) {
+                            selectedAvatar = avatar
+                        }
+                    }
                 }
             }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 15)
-                    .fill(Theme.cardBackground.opacity(0.3))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 15)
-                            .stroke(Theme.accentColor.opacity(0.3), lineWidth: 1)
-                    )
-            )
+            .padding(.horizontal)
+        }
+        .onAppear {
+            // Force animation refresh
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation {
+                    // This will trigger a view refresh and start animations
+                    selectedAvatar = selectedAvatar
+                }
+            }
         }
     }
     
     private var basicInfoView: some View {
         VStack(spacing: 20) {
             Text("Basic Information")
-                .font(.title2.bold())
+                .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
                 .foregroundColor(.white)
                 .shadow(color: Theme.accentColor.opacity(0.3), radius: 5, x: 0, y: 2)
             
@@ -258,7 +298,7 @@ struct ProfileSetupView: View {
     private var educationView: some View {
         VStack(spacing: 20) {
             Text("Education Details")
-                .font(.title2.bold())
+                .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
                 .foregroundColor(.white)
                 .shadow(color: Theme.accentColor.opacity(0.3), radius: 5, x: 0, y: 2)
             
@@ -321,7 +361,7 @@ struct ProfileSetupView: View {
         showConfetti = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             if isOnboarding {
-        showHome = true
+                showHome = true
             } else {
                 dismiss()
             }
@@ -349,6 +389,14 @@ struct ProfileSetupView: View {
             return "circle.fill"
         }
     }
+    
+    private var avatarIcon: String {
+        switch selectedAvatar {
+        case .cat: return "cat.fill"
+        case .fox: return "hare.fill"
+        case .dog: return "dog.fill"
+        }
+    }
 }
 
 struct FormField: View {
@@ -357,22 +405,29 @@ struct FormField: View {
     @State private var isFocused = false
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .foregroundColor(.white)
-                .font(.subheadline)
-            
-            TextField("", text: $text)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .background(Theme.cardBackground)
-                .cornerRadius(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(isFocused ? Theme.accentColor : Color.clear, lineWidth: 1)
-                )
-                .onTapGesture {
-                    isFocused = true
-                }
+                .font(.body)
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white.opacity(0.08))
+                    .frame(height: 38)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isFocused ? Theme.accentColor : Color.white.opacity(0.18), lineWidth: isFocused ? 2 : 1)
+                    )
+                TextField("", text: $text, onEditingChanged: { editing in
+                    isFocused = editing
+                })
+                .frame(height: 38)
+                .padding(.horizontal, 10)
+                .foregroundColor(.white)
+                .font(.body)
+                .accentColor(Theme.accentColor)
+                .disableAutocorrection(true)
+                .autocapitalization(.none)
+            }
         }
     }
 }
@@ -386,12 +441,12 @@ struct AvatarButton: View {
     var body: some View {
         Button(action: action) {
             VStack {
-            Image(systemName: avatarIcon)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 60, height: 60)
-                .foregroundColor(.white)
-                .padding()
+                Image(systemName: avatarIcon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 60, height: 60)
+                    .foregroundColor(.white)
+                    .padding()
                     .background(
                         ZStack {
                             Theme.cardBackground
@@ -421,8 +476,7 @@ struct AvatarButton: View {
     private var avatarIcon: String {
         switch avatar {
         case .cat: return "cat.fill"
-        case .bear: return "bear.fill"
-        case .bunny: return "hare.fill"
+        case .fox: return "hare.fill"
         case .dog: return "dog.fill"
         }
     }

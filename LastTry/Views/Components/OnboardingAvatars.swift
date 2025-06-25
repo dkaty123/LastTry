@@ -65,85 +65,7 @@ struct CosmicCatAvatar: View {
     
     var body: some View {
         ZStack {
-            // Cat body
-            Ellipse()
-                .fill(
-                    LinearGradient(
-                        colors: [Color.orange.opacity(0.8), Color.purple.opacity(0.6)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: size * 0.8, height: size * 0.6)
-                .offset(y: size * 0.1)
-            
-            // Cat head
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Color.orange.opacity(0.9), Color.yellow.opacity(0.7)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: size * 0.7, height: size * 0.7)
-                .shadow(color: Color.orange.opacity(0.3), radius: 8, x: 0, y: 4)
-            
-            // Ears
-            HStack(spacing: size * 0.3) {
-                CatEar(isTwitching: earTwitch, size: size * 0.15)
-                CatEar(isTwitching: earTwitch, size: size * 0.15)
-            }
-            .offset(y: -size * 0.35)
-            
-            // Eyes
-            HStack(spacing: size * 0.2) {
-                CatEye(isBlinking: eyeBlink, size: size * 0.1)
-                CatEye(isBlinking: eyeBlink, size: size * 0.1)
-            }
-            .offset(y: -size * 0.05)
-            
-            // Nose
-            Triangle()
-                .fill(Color.pink)
-                .frame(width: size * 0.08, height: size * 0.06)
-                .offset(y: size * 0.05)
-            
-            // Whiskers
-            HStack(spacing: size * 0.45) {
-                // Left Whiskers
-                VStack(spacing: size * 0.06) {
-                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1).rotationEffect(.degrees(15))
-                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1)
-                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1).rotationEffect(.degrees(-15))
-                }
-                
-                // Right Whiskers
-                VStack(spacing: size * 0.06) {
-                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1).rotationEffect(.degrees(-15))
-                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1)
-                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1).rotationEffect(.degrees(15))
-                }
-            }
-            .offset(y: size * 0.05)
-            
-            // Purring effect
-            if purring {
-                ForEach(0..<3, id: \.self) { index in
-                    Circle()
-                        .fill(Color.orange.opacity(0.3))
-                        .frame(width: size * 0.1, height: size * 0.1)
-                        .offset(x: CGFloat(index - 1) * size * 0.15, y: size * 0.3)
-                        .scaleEffect(purring ? 1.5 : 0.5)
-                        .opacity(purring ? 0 : 1)
-                        .animation(
-                            .easeInOut(duration: 0.8)
-                            .repeatForever(autoreverses: true)
-                            .delay(Double(index) * 0.2),
-                            value: purring
-                        )
-                }
-            }
+            CatFaceBody(size: size, blink: eyeBlink)
         }
         .offset(y: floatingOffset)
         .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: floatingOffset)
@@ -189,6 +111,68 @@ struct CosmicCatAvatar: View {
         
         let impactFeedback = UIImpactFeedbackGenerator(style: .light)
         impactFeedback.impactOccurred()
+    }
+}
+
+struct CatFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    var body: some View {
+        ZStack {
+            // Cat body
+            Ellipse()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.orange.opacity(0.8), Color.orange.opacity(0.6)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 0.8, height: size * 0.6)
+                .offset(y: size * 0.1)
+            // Cat head
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.orange.opacity(0.9), Color.yellow.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 0.7, height: size * 0.7)
+                .shadow(color: Color.orange.opacity(0.3), radius: 8, x: 0, y: 4)
+            // Ears
+            HStack(spacing: size * 0.3) {
+                CatEar(isTwitching: false, size: size * 0.15)
+                CatEar(isTwitching: false, size: size * 0.15)
+            }
+            .offset(y: -size * 0.35)
+            // Eyes
+            HStack(spacing: size * 0.2) {
+                CatEye(isBlinking: blink, size: size * 0.1)
+                CatEye(isBlinking: blink, size: size * 0.1)
+            }
+            .offset(y: -size * 0.05)
+            // Nose
+            Triangle()
+                .fill(Color.pink)
+                .frame(width: size * 0.08, height: size * 0.06)
+                .offset(y: size * 0.05)
+            // Whiskers
+            HStack(spacing: size * 0.45) {
+                VStack(spacing: size * 0.06) {
+                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1).rotationEffect(.degrees(15))
+                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1)
+                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1).rotationEffect(.degrees(-15))
+                }
+                VStack(spacing: size * 0.06) {
+                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1).rotationEffect(.degrees(-15))
+                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1)
+                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: size * 0.2, height: 1).rotationEffect(.degrees(15))
+                }
+            }
+            .offset(y: size * 0.05)
+        }
     }
 }
 
@@ -248,59 +232,7 @@ struct SpaceDogAvatar: View {
     
     var body: some View {
         ZStack {
-            // Dog body
-            Ellipse()
-                .fill(
-                    LinearGradient(
-                        colors: [Color.brown.opacity(0.8), Color.orange.opacity(0.6)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: size * 0.9, height: size * 0.6)
-                .offset(y: size * 0.15)
-            
-            // Dog head
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Color.brown.opacity(0.9), Color.orange.opacity(0.7)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: size * 0.8, height: size * 0.8)
-                .shadow(color: Color.brown.opacity(0.3), radius: 8, x: 0, y: 4)
-            
-            // Ears
-            HStack(spacing: size * 0.4) {
-                DogEar(size: size * 0.2)
-                DogEar(size: size * 0.2)
-            }
-            .offset(y: -size * 0.3)
-            
-            // Eyes
-            HStack(spacing: size * 0.25) {
-                DogEye(isBlinking: eyeBlink, size: size * 0.12)
-                DogEye(isBlinking: eyeBlink, size: size * 0.12)
-            }
-            .offset(y: -size * 0.05)
-            
-            // Nose
-            Circle()
-                .fill(Color.black)
-                .frame(width: size * 0.1, height: size * 0.08)
-                .offset(y: size * 0.08)
-            
-            // Tongue (when panting)
-            if panting {
-                Ellipse()
-                    .fill(Color.pink)
-                    .frame(width: size * 0.15, height: size * 0.08)
-                    .offset(y: size * 0.2)
-                    .scaleEffect(panting ? 1.2 : 1.0)
-                    .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: panting)
-            }
+            DogFaceBody(size: size, blink: eyeBlink)
         }
         .offset(y: floatingOffset)
         .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true), value: floatingOffset)
@@ -345,6 +277,54 @@ struct SpaceDogAvatar: View {
         
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
+    }
+}
+
+struct DogFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    var body: some View {
+        ZStack {
+            // Dog body
+            Ellipse()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.brown.opacity(0.8), Color.orange.opacity(0.6)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 0.9, height: size * 0.6)
+                .offset(y: size * 0.15)
+            // Dog head
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.brown.opacity(0.9), Color.orange.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 0.8, height: size * 0.8)
+                .shadow(color: Color.brown.opacity(0.3), radius: 8, x: 0, y: 4)
+            // Ears
+            HStack(spacing: size * 0.4) {
+                DogEar(size: size * 0.2)
+                DogEar(size: size * 0.2)
+            }
+            .offset(y: -size * 0.3)
+            // Eyes
+            HStack(spacing: size * 0.25) {
+                DogEye(isBlinking: blink, size: size * 0.12)
+                DogEye(isBlinking: blink, size: size * 0.12)
+            }
+            .offset(y: -size * 0.05)
+            // Nose
+            Circle()
+                .fill(Color.black)
+                .frame(width: size * 0.1, height: size * 0.08)
+                .offset(y: size * 0.08)
+        }
     }
 }
 
@@ -402,14 +382,6 @@ struct StarFoxAvatar: View {
     
     var body: some View {
         ZStack {
-            // Wisdom aura
-            Circle()
-                .fill(Theme.accentColor.opacity(0.2))
-                .frame(width: size * 1.4, height: size * 1.4)
-                .scaleEffect(wisdomGlow ? 1.2 : 1.0)
-                .opacity(wisdomGlow ? 0.8 : 0.4)
-                .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: wisdomGlow)
-            
             // Fox body
             Ellipse()
                 .fill(
@@ -911,6 +883,104 @@ struct SpinningPlanetView: View {
     }
 }
 
+// MARK: - Floating Winking Star View
+struct FloatingWinkingStarView: View {
+    @State private var isWinking = false
+    @State private var twinkle = false
+    @State private var floatingOffset: CGFloat = 0
+    let size: CGFloat
+    
+    init(size: CGFloat = 60) {
+        self.size = size
+    }
+    
+    var body: some View {
+        ZStack {
+            // Star body
+            StarShape(points: 5)
+                .fill(LinearGradient(colors: [Color.yellow, Color.orange.opacity(0.8)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size, height: size)
+                .shadow(color: Color.yellow.opacity(0.4), radius: 12, x: 0, y: 4)
+                .scaleEffect(twinkle ? 1.05 : 1.0)
+                .animation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true), value: twinkle)
+            // Twinkling rays
+            ForEach(0..<8) { i in
+                Capsule()
+                    .fill(Color.yellow.opacity(0.7))
+                    .frame(width: size * 0.12, height: size * 0.38)
+                    .offset(y: -size * 0.7 / 2)
+                    .rotationEffect(.degrees(Double(i) * 45))
+                    .opacity(twinkle ? 0.5 : 1.0)
+                    .animation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true), value: twinkle)
+            }
+            // Cute face
+            VStack(spacing: 0) {
+                HStack(spacing: size * 0.13) {
+                    Circle()
+                        .fill(Color.black)
+                        .frame(width: size * 0.13, height: size * 0.13)
+                        .scaleEffect(isWinking ? CGSize(width: 1.0, height: 0.2) : CGSize(width: 1.0, height: 1.0), anchor: .center)
+                        .animation(.easeInOut(duration: 0.3), value: isWinking)
+                    Circle()
+                        .fill(Color.black)
+                        .frame(width: size * 0.13, height: size * 0.13)
+                }
+                .padding(.top, size * 0.13)
+                RoundedRectangle(cornerRadius: size * 0.04)
+                    .fill(Color.black)
+                    .frame(width: size * 0.18, height: size * 0.06)
+                    .padding(.top, size * 0.04)
+            }
+        }
+        .offset(y: floatingOffset)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                floatingOffset = -10
+            }
+            withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) {
+                twinkle.toggle()
+            }
+            Timer.scheduledTimer(withTimeInterval: 2.2, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isWinking.toggle()
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isWinking.toggle()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct StarShape: Shape {
+    let points: Int
+    func path(in rect: CGRect) -> Path {
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        var path = Path()
+        let angle = .pi * 2 / Double(points * 2)
+        let radius = min(rect.width, rect.height) / 2
+        let innerRadius = radius * 0.45
+        var currentAngle = -CGFloat.pi / 2
+        var firstPoint = true
+        for i in 0..<(points * 2) {
+            let r = i % 2 == 0 ? radius : innerRadius
+            let x = center.x + CGFloat(cos(currentAngle)) * r
+            let y = center.y + CGFloat(sin(currentAngle)) * r
+            if firstPoint {
+                path.move(to: CGPoint(x: x, y: y))
+                firstPoint = false
+            } else {
+                path.addLine(to: CGPoint(x: x, y: y))
+            }
+            currentAngle += angle
+        }
+        path.closeSubpath()
+        return path
+    }
+}
+
 // MARK: - Avatar Factory
 struct AvatarFactory {
     static func createAvatar(type: AvatarType, size: CGFloat = 120, isInteractive: Bool = true) -> AnyView {
@@ -935,17 +1005,16 @@ struct AvatarFactory {
 struct AvatarSelectionView: View {
     @Binding var selectedAvatar: AvatarType
     @Environment(\.dismiss) private var dismiss
-    
+    @StateObject private var motion = SplashMotionManager()
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.primaryGradient
+                ScholarSplashBackgroundView(motion: motion)
                     .ignoresSafeArea()
-                
+                ScholarSplashDriftingStarFieldView()
                 ScrollView {
                     VStack(spacing: 24) {
                         headerView
-                        
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20) {
                             ForEach(AvatarType.allCases, id: \.self) { avatarType in
                                 AvatarCard(
@@ -956,7 +1025,6 @@ struct AvatarSelectionView: View {
                             }
                         }
                         .padding(.horizontal)
-                        
                         confirmButton
                     }
                     .padding()
@@ -974,21 +1042,18 @@ struct AvatarSelectionView: View {
             }
         }
     }
-    
     private var headerView: some View {
         VStack(spacing: 16) {
             Text("Choose Your Cosmic Companion")
-                .font(.title2.bold())
+                .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
-            
             Text("Select a friendly avatar to guide you through your scholarship journey")
                 .font(.body)
                 .foregroundColor(.white.opacity(0.8))
                 .multilineTextAlignment(.center)
         }
     }
-    
     private var confirmButton: some View {
         Button(action: { dismiss() }) {
             Text("Continue with \(selectedAvatar.rawValue)")
@@ -1011,14 +1076,12 @@ struct AvatarCard: View {
         Button(action: action) {
             VStack(spacing: 16) {
                 AvatarFactory.createAvatar(type: type, size: 80, isInteractive: false)
-                
                 VStack(spacing: 8) {
                     Text(type.rawValue)
-                        .font(.headline)
+                        .font(Font.custom("SF Pro Rounded", size: 18).weight(.bold))
                         .foregroundColor(.white)
-                    
                     Text(type.description)
-                        .font(.caption)
+                        .font(.body)
                         .foregroundColor(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
                         .lineLimit(3)
@@ -1027,7 +1090,10 @@ struct AvatarCard: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected ? Theme.accentColor.opacity(0.3) : Color.white.opacity(0.1))
+                    .fill(Color.white.opacity(0.1))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(isSelected ? Theme.accentColor : Color.clear, lineWidth: 2)
             )
         }
@@ -1047,23 +1113,992 @@ struct Triangle: Shape {
     }
 }
 
-#Preview {
-    VStack(spacing: 20) {
-        HStack(spacing: 20) {
-            CosmicCatAvatar(size: 100)
-            SpaceDogAvatar(size: 100)
-            StarFoxAvatar(size: 100)
+struct AnimatedPlanetView: View {
+    @State private var isRotating = false
+    @State private var sparklePhases: [Bool] = Array(repeating: false, count: 8)
+    let size: CGFloat
+    let planetColor: Color
+    let ringColor: Color
+    
+    init(size: CGFloat = 70, planetColor: Color = Color.blue, ringColor: Color = Color.purple) {
+        self.size = size
+        self.planetColor = planetColor
+        self.ringColor = ringColor
+    }
+    
+    var body: some View {
+        ZStack {
+            // Planet
+            Circle()
+                .fill(LinearGradient(colors: [planetColor, planetColor.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .frame(width: size, height: size)
+                .shadow(color: planetColor.opacity(0.3), radius: 10, x: 0, y: 4)
+                .rotationEffect(.degrees(isRotating ? 360 : 0))
+                .animation(.linear(duration: 8).repeatForever(autoreverses: false), value: isRotating)
+            // Rings
+            Ellipse()
+                .stroke(ringColor.opacity(0.7), lineWidth: 6)
+                .frame(width: size * 1.4, height: size * 0.45)
+                .rotationEffect(.degrees(isRotating ? 360 : 0))
+                .blur(radius: 0.7)
+                .animation(.linear(duration: 8).repeatForever(autoreverses: false), value: isRotating)
+            // Sparkles
+            ForEach(0..<8) { i in
+                Circle()
+                    .fill(Color.white.opacity(sparklePhases[i] ? 1.0 : 0.3))
+                    .frame(width: CGFloat.random(in: 4...7), height: CGFloat.random(in: 4...7))
+                    .offset(x: cos(Double(i) * .pi / 4) * size * 0.7, y: sin(Double(i) * .pi / 4) * size * 0.4)
+                    .scaleEffect(sparklePhases[i] ? 1.2 : 0.7)
+                    .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true).delay(Double(i) * 0.18), value: sparklePhases[i])
+            }
         }
-        HStack(spacing: 20) {
-            NebulaOwlAvatar(size: 100)
-            QuantumPenguinAvatar(size: 100)
-            GalaxyDragonAvatar(size: 100)
-        }
-        HStack {
-            ShootingStarView(delay: 0)
-            SpinningPlanetView(size: 80, color1: .blue, color2: .green)
+        .onAppear {
+            isRotating = true
+            for i in sparklePhases.indices {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.18) {
+                    sparklePhases[i] = true
+                }
+            }
         }
     }
-    .padding()
-    .background(Theme.primaryGradient)
+}
+
+struct AstronautCatView: View {
+    @State private var floating = false
+    @State private var waving = false
+    @State private var blink = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body with colored panels and seams
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.white, Color.gray.opacity(0.7)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.blue.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.blue.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Arms with gloves (copying leg design exactly)
+            ZStack {
+                // Left arm
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.blue)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(x: -size * 0.22, y: size * 0.25)
+                .rotationEffect(.degrees(15), anchor: .bottom)
+                // Right arm
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.blue)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(x: size * 0.22, y: size * 0.25)
+                .rotationEffect(.degrees(-15), anchor: .bottom)
+            }
+            // Legs with boots
+            HStack(spacing: size * 0.18) {
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.blue)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(y: size * 0.5)
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.blue)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(y: size * 0.5)
+            }
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.blue.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Cat face/body inside helmet
+            CatFaceBody(size: size * 0.7, blink: blink)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.4)) { waving.toggle() }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    withAnimation(.easeInOut(duration: 0.4)) { waving.toggle() }
+                }
+            }
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+        }
+    }
+}
+
+struct AstronautDogView: View {
+    @State private var floating = false
+    @State private var tailWag = false
+    @State private var blink = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body with colored panels and seams
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.white, Color.gray.opacity(0.7)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.orange.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.orange.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Arms with gloves (copying leg design exactly)
+            ZStack {
+                // Left arm
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(x: -size * 0.22, y: size * 0.25)
+                .rotationEffect(.degrees(15), anchor: .bottom)
+                // Right arm
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(x: size * 0.22, y: size * 0.25)
+                .rotationEffect(.degrees(-15), anchor: .bottom)
+            }
+            // Legs with boots
+            HStack(spacing: size * 0.18) {
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(y: size * 0.5)
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(y: size * 0.5)
+            }
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.orange.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Dog face/body inside helmet
+            DogFaceBody(size: size * 0.7, blink: blink)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            tailWag = true
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+        }
+    }
+}
+
+struct AstronautBunnyView: View {
+    @State private var floating = false
+    @State private var blink = false
+    @State private var earWiggle = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.white, Color.gray.opacity(0.7)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.pink.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.pink.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.pink.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Bunny face/body inside helmet
+            BunnyFaceBody(size: size * 0.7, blink: blink, earWiggle: earWiggle)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            earWiggle = true
+            Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.3)) { earWiggle.toggle() }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.easeInOut(duration: 0.3)) { earWiggle.toggle() }
+                }
+            }
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+        }
+    }
+}
+
+struct BunnyFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    let earWiggle: Bool
+    var body: some View {
+        ZStack {
+            // Bunny body
+            Ellipse()
+                .fill(LinearGradient(colors: [Color.white, Color.gray.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .frame(width: size * 0.8, height: size * 0.6)
+                .offset(y: size * 0.1)
+            // Bunny head
+            Circle()
+                .fill(LinearGradient(colors: [Color.white, Color.gray.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .frame(width: size * 0.7, height: size * 0.7)
+                .shadow(color: Color.pink.opacity(0.2), radius: 8, x: 0, y: 4)
+            // Ears
+            HStack(spacing: size * 0.3) {
+                RoundedRectangle(cornerRadius: size * 0.02)
+                    .fill(Color.white)
+                    .frame(width: size * 0.13, height: size * 0.32)
+                    .offset(y: -size * 0.32)
+                    .rotationEffect(.degrees(earWiggle ? 5 : -5))
+                RoundedRectangle(cornerRadius: size * 0.02)
+                    .fill(Color.white)
+                    .frame(width: size * 0.13, height: size * 0.32)
+                    .offset(y: -size * 0.32)
+                    .rotationEffect(.degrees(earWiggle ? -5 : 5))
+            }
+            // Eyes
+            HStack(spacing: size * 0.2) {
+                Circle().fill(Color.pink).frame(width: size * 0.1, height: size * 0.1).scaleEffect(y: blink ? 0.1 : 1.0)
+                Circle().fill(Color.pink).frame(width: size * 0.1, height: size * 0.1).scaleEffect(y: blink ? 0.1 : 1.0)
+            }
+            // Nose
+            Circle().fill(Color.pink).frame(width: size * 0.06, height: size * 0.06).offset(y: size * 0.06)
+        }
+    }
+}
+
+struct FoxFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    var body: some View {
+        ZStack {
+            // Fox body
+            Ellipse()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.orange.opacity(0.9), Color.red.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 0.8, height: size * 0.5)
+                .offset(y: size * 0.2)
+            // Fox head
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.orange.opacity(0.9), Color.red.opacity(0.6)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 0.7, height: size * 0.7)
+                .shadow(color: Color.orange.opacity(0.3), radius: 8, x: 0, y: 4)
+            // Ears
+            HStack(spacing: size * 0.25) {
+                FoxEar(size: size * 0.18)
+                FoxEar(size: size * 0.18)
+            }
+            .offset(y: -size * 0.35)
+            // Eyes
+            HStack(spacing: size * 0.2) {
+                FoxEye(isBlinking: blink, size: size * 0.1)
+                FoxEye(isBlinking: blink, size: size * 0.1)
+            }
+            .offset(y: -size * 0.05)
+            // Nose
+            Circle()
+                .fill(Color.black)
+                .frame(width: size * 0.08, height: size * 0.06)
+                .offset(y: size * 0.08)
+        }
+    }
+}
+
+struct AstronautFoxView: View {
+    @State private var floating = false
+    @State private var blink = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body with colored panels and seams
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.white, Color.gray.opacity(0.7)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.orange.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.orange.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Arms with gloves (copying leg design exactly)
+            ZStack {
+                // Left arm
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(x: -size * 0.22, y: size * 0.25)
+                .rotationEffect(.degrees(15), anchor: .bottom)
+                // Right arm
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(x: size * 0.22, y: size * 0.25)
+                .rotationEffect(.degrees(-15), anchor: .bottom)
+            }
+            // Legs with boots
+            HStack(spacing: size * 0.18) {
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(y: size * 0.5)
+                VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.7))
+                        .frame(width: size * 0.11, height: size * 0.16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: size * 0.11, height: size * 0.08)
+                }
+                .offset(y: size * 0.5)
+            }
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.orange.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Fox face/body inside helmet
+            FoxFaceBody(size: size * 0.7, blink: blink)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+        }
+    }
+}
+
+// MARK: - Astronaut Owl
+struct AstronautOwlView: View {
+    @State private var floating = false
+    @State private var blink = false
+    @State private var headTilt = false
+    @State private var wingFlap = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.purple.opacity(0.8), Color.indigo.opacity(0.7)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.purple.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.purple.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Wings (animated)
+            HStack(spacing: size * 0.32) {
+                Ellipse().fill(Color.purple).frame(width: size * 0.13, height: size * 0.28)
+                    .rotationEffect(.degrees(wingFlap ? -18 : 8), anchor: .topTrailing)
+                Ellipse().fill(Color.purple).frame(width: size * 0.13, height: size * 0.28)
+                    .rotationEffect(.degrees(wingFlap ? 18 : -8), anchor: .topLeading)
+            }
+            .offset(y: size * 0.18)
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.purple.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Owl face/body inside helmet
+            OwlFaceBody(size: size * 0.7, blink: blink, headTilt: headTilt)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true)) { headTilt = true }
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) { wingFlap.toggle() }
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+        }
+    }
+}
+struct OwlFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    let headTilt: Bool
+    var body: some View {
+        ZStack {
+            Ellipse().fill(LinearGradient(colors: [Color.purple, Color.indigo], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.8, height: size)
+            // Head
+            Circle().fill(LinearGradient(colors: [Color.purple, Color.indigo], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.7, height: size * 0.7).offset(y: -size * 0.25).rotationEffect(.degrees(headTilt ? 10 : -10))
+            // Eyes
+            HStack(spacing: size * 0.18) {
+                ZStack {
+                    Circle().fill(Color.yellow).frame(width: size * 0.15, height: size * 0.15).shadow(color: .yellow, radius: 6)
+                    Circle().fill(Color.black).frame(width: size * 0.09, height: size * 0.09)
+                }.scaleEffect(y: blink ? 0.1 : 1.0)
+                ZStack {
+                    Circle().fill(Color.yellow).frame(width: size * 0.15, height: size * 0.15).shadow(color: .yellow, radius: 6)
+                    Circle().fill(Color.black).frame(width: size * 0.09, height: size * 0.09)
+                }.scaleEffect(y: blink ? 0.1 : 1.0)
+            }.offset(y: -size * 0.25).rotationEffect(.degrees(headTilt ? 10 : -10))
+            // Beak
+            Triangle().fill(Color.orange).frame(width: size * 0.08, height: size * 0.08).rotationEffect(.degrees(180)).offset(y: -size * 0.13)
+        }
+    }
+}
+
+// MARK: - Astronaut Penguin
+struct AstronautPenguinView: View {
+    @State private var floating = false
+    @State private var blink = false
+    @State private var shimmer = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.white, Color.gray.opacity(0.7)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.blue.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.blue.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Flippers (animated)
+            HStack(spacing: size * 0.32) {
+                Ellipse().fill(Color.black).frame(width: size * 0.09, height: size * 0.22).rotationEffect(.degrees(shimmer ? -18 : 8), anchor: .topTrailing)
+                Ellipse().fill(Color.black).frame(width: size * 0.09, height: size * 0.22).rotationEffect(.degrees(shimmer ? 18 : -8), anchor: .topLeading)
+            }
+            .offset(y: size * 0.18)
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.blue.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Penguin face/body inside helmet
+            PenguinFaceBody(size: size * 0.7, blink: blink, shimmer: shimmer)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) { shimmer.toggle() }
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+        }
+    }
+}
+struct PenguinFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    let shimmer: Bool
+    var body: some View {
+        ZStack {
+            Ellipse().fill(Color.black).frame(width: size * 0.7, height: size)
+            Ellipse().fill(Color.white).frame(width: size * 0.5, height: size * 0.8).offset(y: size * 0.05)
+            Ellipse().fill(LinearGradient(colors: [Color.blue.opacity(0.5), Color.cyan.opacity(0.5)], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.7, height: size).opacity(shimmer ? 0.8 : 0).scaleEffect(shimmer ? 1.1 : 1.0).blur(radius: shimmer ? 5 : 0)
+            // Eyes
+            HStack(spacing: size * 0.13) {
+                Circle().fill(Color.white).frame(width: size * 0.08, height: size * 0.08).overlay(Circle().fill(Color.black).frame(width: size * 0.05, height: size * 0.05)).scaleEffect(y: blink ? 0.1 : 1.0)
+                Circle().fill(Color.white).frame(width: size * 0.08, height: size * 0.08).overlay(Circle().fill(Color.black).frame(width: size * 0.05, height: size * 0.05)).scaleEffect(y: blink ? 0.1 : 1.0)
+            }.offset(y: -size * 0.15)
+            // Beak
+            Triangle().fill(Color.orange).frame(width: size * 0.09, height: size * 0.06).rotationEffect(.degrees(180)).offset(y: size * 0.04)
+        }
+    }
+}
+
+// MARK: - Astronaut Dragon
+struct AstronautDragonView: View {
+    @State private var floating = false
+    @State private var blink = false
+    @State private var smoke = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.7)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.purple.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.purple.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Tail (animated)
+            Capsule().fill(Color.purple).frame(width: size * 0.09, height: size * 0.32).rotationEffect(.degrees(floating ? 30 : -30), anchor: .bottom).offset(x: size * 0.22, y: size * 0.38).animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: floating)
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.purple.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Dragon face/body inside helmet
+            DragonFaceBody(size: size * 0.7, blink: blink, smoke: smoke)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+            Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.5)) { smoke = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { withAnimation { smoke = false } }
+            }
+        }
+    }
+}
+struct DragonFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    let smoke: Bool
+    var body: some View {
+        ZStack {
+            // Head
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.blue, Color.purple], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.7, height: size * 0.7)
+            // Eyes
+            HStack(spacing: size * 0.18) {
+                Circle().fill(Color.cyan).frame(width: size * 0.13, height: size * 0.13).overlay(Circle().fill(Color.black).frame(width: size * 0.07, height: size * 0.07)).scaleEffect(y: blink ? 0.1 : 1.0)
+                Circle().fill(Color.cyan).frame(width: size * 0.13, height: size * 0.13).overlay(Circle().fill(Color.black).frame(width: size * 0.07, height: size * 0.07)).scaleEffect(y: blink ? 0.1 : 1.0)
+            }.offset(y: -size * 0.1)
+            // Nostrils
+            HStack(spacing: size * 0.08) {
+                Circle().fill(Color.black.opacity(0.5)).frame(width: size * 0.05, height: size * 0.05)
+                Circle().fill(Color.black.opacity(0.5)).frame(width: size * 0.05, height: size * 0.05)
+            }.offset(y: size * 0.08)
+            // Horns
+            HStack(spacing: size * 0.22) {
+                Capsule().fill(Color.purple).frame(width: size * 0.05, height: size * 0.18).rotationEffect(.degrees(-18)).offset(y: -size * 0.32)
+                Capsule().fill(Color.purple).frame(width: size * 0.05, height: size * 0.18).rotationEffect(.degrees(18)).offset(y: -size * 0.32)
+            }
+            // Smoke puff
+            if smoke {
+                Circle().fill(Color.white.opacity(0.7)).frame(width: size * 0.18, height: size * 0.18).offset(y: -size * 0.22)
+            }
+        }
+    }
+}
+
+// MARK: - Astronaut Bear (Stellar Bear)
+struct AstronautBearView: View {
+    @State private var floating = false
+    @State private var blink = false
+    @State private var pawWave = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.brown.opacity(0.7), Color.yellow.opacity(0.3)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.yellow.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.yellow.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Paw (animated wave)
+            VStack(spacing: 0) {
+                Capsule().fill(Color.brown).frame(width: size * 0.13, height: size * 0.18)
+                Circle().fill(Color.yellow).frame(width: size * 0.13, height: size * 0.13)
+            }
+            .offset(x: -size * 0.22, y: size * 0.25)
+            .rotationEffect(.degrees(pawWave ? 30 : 0), anchor: .bottom)
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.yellow.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Bear face/body inside helmet
+            BearFaceBody(size: size * 0.7, blink: blink)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.4)) { pawWave.toggle() }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    withAnimation(.easeInOut(duration: 0.4)) { pawWave.toggle() }
+                }
+            }
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+        }
+    }
+}
+struct BearFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    var body: some View {
+        ZStack {
+            Ellipse().fill(LinearGradient(colors: [Color.brown, Color.yellow.opacity(0.5)], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.8, height: size * 0.6).offset(y: size * 0.1)
+            Circle().fill(LinearGradient(colors: [Color.brown, Color.yellow.opacity(0.5)], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.7, height: size * 0.7).shadow(color: Color.yellow.opacity(0.2), radius: 8, x: 0, y: 4)
+            // Ears
+            HStack(spacing: size * 0.3) {
+                Circle().fill(Color.brown).frame(width: size * 0.18, height: size * 0.18).offset(y: -size * 0.18)
+                Circle().fill(Color.brown).frame(width: size * 0.18, height: size * 0.18).offset(y: -size * 0.18)
+            }
+            // Eyes
+            HStack(spacing: size * 0.13) {
+                Circle().fill(Color.black).frame(width: size * 0.08, height: size * 0.08).scaleEffect(y: blink ? 0.1 : 1.0)
+                Circle().fill(Color.black).frame(width: size * 0.08, height: size * 0.08).scaleEffect(y: blink ? 0.1 : 1.0)
+            }
+            // Nose
+            Ellipse().fill(Color.black).frame(width: size * 0.09, height: size * 0.06).offset(y: size * 0.04)
+            // Mouth
+            RoundedRectangle(cornerRadius: size * 0.02).fill(Color.black).frame(width: size * 0.13, height: size * 0.03).offset(y: size * 0.09)
+        }
+    }
+}
+
+// MARK: - Astronaut Raccoon (Rocket Raccoon)
+struct AstronautRaccoonView: View {
+    @State private var floating = false
+    @State private var blink = false
+    @State private var tailSwish = false
+    let size: CGFloat
+    init(size: CGFloat = 110) { self.size = size }
+    var body: some View {
+        ZStack {
+            // Suit body
+            RoundedRectangle(cornerRadius: size * 0.18)
+                .fill(LinearGradient(colors: [Color.gray.opacity(0.7), Color.black.opacity(0.5)], startPoint: .top, endPoint: .bottom))
+                .frame(width: size * 0.38, height: size * 0.55)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.18)
+                        .stroke(Color.gray.opacity(0.18), lineWidth: 2)
+                )
+                .overlay(
+                    VStack {
+                        Rectangle().fill(Color.gray.opacity(0.18)).frame(width: size * 0.32, height: size * 0.08).cornerRadius(6).offset(y: size * 0.13)
+                        Spacer()
+                    }
+                )
+                .offset(y: size * 0.22)
+            // Tail (animated swish)
+            Capsule().fill(LinearGradient(colors: [Color.gray, Color.black], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.09, height: size * 0.32).rotationEffect(.degrees(tailSwish ? 30 : -30), anchor: .bottom).offset(x: size * 0.22, y: size * 0.38).animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: tailSwish)
+            // Chest control panel
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.8))
+                .frame(width: size * 0.16, height: size * 0.07)
+                .overlay(
+                    HStack(spacing: 2) {
+                        Circle().fill(Color.red).frame(width: size * 0.025)
+                        Circle().fill(Color.green).frame(width: size * 0.025)
+                        Circle().fill(Color.yellow).frame(width: size * 0.025)
+                    }
+                )
+                .offset(y: size * 0.28)
+            // Helmet
+            Circle()
+                .stroke(Color.white.opacity(0.7), lineWidth: size * 0.11)
+                .frame(width: size * 0.7, height: size * 0.7)
+                .offset(y: -size * 0.08)
+                .shadow(color: Color.gray.opacity(0.18), radius: 8, x: 0, y: 2)
+            // Raccoon face/body inside helmet
+            RaccoonFaceBody(size: size * 0.7, blink: blink, tailSwish: tailSwish)
+                .offset(y: -size * 0.08)
+        }
+        .offset(y: floating ? -12 : 8)
+        .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: floating)
+        .onAppear {
+            floating = true
+            withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) { tailSwish.toggle() }
+            Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.1)) { blink = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { blink = false }
+            }
+        }
+    }
+}
+struct RaccoonFaceBody: View {
+    let size: CGFloat
+    let blink: Bool
+    let tailSwish: Bool
+    var body: some View {
+        ZStack {
+            Ellipse().fill(LinearGradient(colors: [Color.gray, Color.black], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.8, height: size * 0.6).offset(y: size * 0.1)
+            Circle().fill(LinearGradient(colors: [Color.gray, Color.black], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.7, height: size * 0.7).shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+            // Ears
+            HStack(spacing: size * 0.3) {
+                Circle().fill(Color.gray).frame(width: size * 0.18, height: size * 0.18).offset(y: -size * 0.18)
+                Circle().fill(Color.gray).frame(width: size * 0.18, height: size * 0.18).offset(y: -size * 0.18)
+            }
+            // Eyes (with mask)
+            HStack(spacing: size * 0.13) {
+                ZStack {
+                    Ellipse().fill(Color.black).frame(width: size * 0.13, height: size * 0.08)
+                    Circle().fill(Color.white).frame(width: size * 0.08, height: size * 0.08).overlay(Circle().fill(Color.black).frame(width: size * 0.05, height: size * 0.05)).scaleEffect(y: blink ? 0.1 : 1.0)
+                }
+                ZStack {
+                    Ellipse().fill(Color.black).frame(width: size * 0.13, height: size * 0.08)
+                    Circle().fill(Color.white).frame(width: size * 0.08, height: size * 0.08).overlay(Circle().fill(Color.black).frame(width: size * 0.05, height: size * 0.05)).scaleEffect(y: blink ? 0.1 : 1.0)
+                }
+            }
+            // Nose
+            Ellipse().fill(Color.black).frame(width: size * 0.09, height: size * 0.06).offset(y: size * 0.04)
+            // Mouth
+            RoundedRectangle(cornerRadius: size * 0.02).fill(Color.black).frame(width: size * 0.13, height: size * 0.03).offset(y: size * 0.09)
+            // Tail (swishing)
+            Capsule().fill(LinearGradient(colors: [Color.gray, Color.black], startPoint: .top, endPoint: .bottom)).frame(width: size * 0.09, height: size * 0.32).rotationEffect(.degrees(tailSwish ? 30 : -30), anchor: .bottom).offset(x: size * 0.22, y: size * 0.38)
+        }
+    }
+}
+
+#Preview {
+    ZStack {
+        Color.black.ignoresSafeArea()
+        FloatingWinkingStarView(size: 80).position(x: 100, y: 120)
+        AnimatedPlanetView(size: 90, planetColor: .blue, ringColor: .purple).position(x: 220, y: 200)
+        AnimatedPlanetView(size: 60, planetColor: .green, ringColor: .yellow).position(x: 60, y: 300)
+    }
+    .frame(width: 350, height: 400)
 } 

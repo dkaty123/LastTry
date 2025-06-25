@@ -1,9 +1,13 @@
 import SwiftUI
 
 struct MoreTabView: View {
+    @StateObject private var motion = SplashMotionManager()
+    
     var body: some View {
         ZStack {
-            Theme.primaryGradient.ignoresSafeArea()
+            ScholarSplashBackgroundView(motion: motion)
+                .ignoresSafeArea()
+            ScholarSplashDriftingStarFieldView()
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Image(systemName: "sparkles")

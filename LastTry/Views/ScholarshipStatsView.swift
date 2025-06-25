@@ -3,6 +3,7 @@ import SwiftUI
 struct ScholarshipStatsView: View {
     @EnvironmentObject private var viewModel: AppViewModel
     @State private var isAnimating = false
+    @StateObject private var motion = SplashMotionManager()
     
     // Sample data - in a real app, this would come from your data model
     private let stats = [
@@ -16,9 +17,9 @@ struct ScholarshipStatsView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            Theme.primaryGradient
+            ScholarSplashBackgroundView(motion: motion)
                 .ignoresSafeArea()
+            ScholarSplashDriftingStarFieldView()
             
             ScrollView {
                 VStack(spacing: 25) {

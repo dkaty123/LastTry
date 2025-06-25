@@ -4,29 +4,47 @@ struct ProfileView: View {
     @EnvironmentObject private var viewModel: AppViewModel
     @State private var showEditProfile = false
     @State private var showSettings = false
+    @StateObject private var motion = SplashMotionManager()
     
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.primaryGradient
+                ScholarSplashBackgroundView(motion: motion)
                     .ignoresSafeArea()
-                
+                ScholarSplashDriftingStarFieldView()
                 ScrollView {
                     VStack(spacing: 30) {
                         // Avatar and Name
                         VStack(spacing: 15) {
-                            Image(systemName: avatarIcon)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 100, height: 100)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Theme.accentColor.opacity(0.3))
-                                .clipShape(Circle())
+                            ZStack {
+                                Circle()
+                                    .fill(Theme.accentColor.opacity(0.3))
+                                    .frame(width: 140, height: 140)
+                                
+                                Group {
+                                    if let avatarType = viewModel.userProfile?.avatarType {
+                                        Group {
+                                            if avatarType == .cat {
+                                                AstronautCatView(size: 120)
+                                            } else if avatarType == .fox {
+                                                AstronautFoxView(size: 120)
+                                            } else if avatarType == .dog {
+                                                AstronautDogView(size: 120)
+                                            }
+                                        }
+                                    } else {
+                                        Image(systemName: "person.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 80, height: 80)
+                                            .foregroundColor(Color(white: 1.0))
+                                    }
+                                }
+                            }
                             
                             Text(viewModel.userProfile?.name ?? "Space Explorer")
-                                .font(.title2.bold())
-                                .foregroundColor(.white)
+                                .font(Font.custom("SF Pro Rounded", size: 28).weight(.bold))
+                                .foregroundColor(Color(white: 1.0))
                         }
                         .padding(.top)
                         
@@ -55,7 +73,7 @@ struct ProfileView: View {
                         Button(action: { showEditProfile = true }) {
                             Text("Edit Profile")
                                 .font(.headline)
-                                .foregroundColor(.white)
+                                .foregroundColor(Color(white: 1.0))
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(Theme.accentColor)
@@ -65,13 +83,14 @@ struct ProfileView: View {
                     }
                 }
             }
-            .navigationTitle("Profile")
+            .navigationTitle(Text("Profile")
+                .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold)))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showSettings = true }) {
                         Image(systemName: "gearshape.fill")
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(white: 1.0))
                     }
                 }
             }
@@ -81,16 +100,6 @@ struct ProfileView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView()
             }
-        }
-    }
-    
-    private var avatarIcon: String {
-        switch viewModel.userProfile?.avatarType {
-        case .cat: return "cat.fill"
-        case .bear: return "bear.fill"
-        case .bunny: return "hare.fill"
-        case .dog: return "dog.fill"
-        case .none: return "person.fill"
         }
     }
 }
@@ -103,11 +112,11 @@ struct ProfileStatCard: View {
         VStack(spacing: 10) {
             Text(title)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(Color(white: 1.0, opacity: 0.8))
             
             Text(value)
-                .font(.title2.bold())
-                .foregroundColor(.white)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(Color(white: 1.0))
         }
         .frame(maxWidth: .infinity)
         .padding()
@@ -123,10 +132,10 @@ struct ProfileInfoRow: View {
     var body: some View {
         HStack {
             Text(title)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(Color(white: 1.0, opacity: 0.8))
             Spacer()
             Text(value)
-                .foregroundColor(.white)
+                .foregroundColor(Color(white: 1.0))
         }
     }
 }

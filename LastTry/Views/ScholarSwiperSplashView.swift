@@ -10,8 +10,6 @@ struct ScholarSwiperSplashView: View {
     @State private var typingText: String = ""
     @State private var showMain = false
     @State private var showOnboarding = false
-    @State private var rocketLaunched = false
-    @State private var launchedRockets: [UUID] = []
     @State private var showButtonPulse = false
     @State private var showButtonPulse2 = false
     @State private var iconPop = false
@@ -29,6 +27,8 @@ struct ScholarSwiperSplashView: View {
     @State private var animalFalling: [Bool] = [false, false, false]
     @State private var animalSeated: [Bool] = [false, false, false]
     @State private var takeoffY: CGFloat = 0.0
+    @State private var takeoffX: CGFloat = 0.0
+    @State private var isTakingOff: Bool = false
     @ObservedObject private var motion = SplashMotionManager()
     
     private let fullTypingText = "Powered by AI · Launching Scholarships..."
@@ -39,10 +39,15 @@ struct ScholarSwiperSplashView: View {
     private let typingSpeed: Double = 0.04
     
     @State private var animals: [FloatingAstronautAnimal] = [
-        FloatingAstronautAnimal(type: .cat, position: .zero, target: .zero, angle: 0, bob: 0, size: CGSize(width: 64, height: 64)),
-        FloatingAstronautAnimal(type: .dog, position: .zero, target: .zero, angle: 0, bob: 0, size: CGSize(width: 68, height: 68)),
-        FloatingAstronautAnimal(type: .bunny, position: .zero, target: .zero, angle: 0, bob: 0, size: CGSize(width: 66, height: 72))
+        FloatingAstronautAnimal(type: .cat, position: CGPoint(x: 80, y: 120), target: .zero, angle: 0, bob: 0, size: CGSize(width: 64, height: 64)),
+        FloatingAstronautAnimal(type: .dog, position: CGPoint(x: 180, y: 140), target: .zero, angle: 0, bob: 0, size: CGSize(width: 68, height: 68)),
+        FloatingAstronautAnimal(type: .bunny, position: CGPoint(x: 280, y: 100), target: .zero, angle: 0, bob: 0, size: CGSize(width: 66, height: 72))
     ]
+    
+    // Avatar motion states
+    @State private var avatarAngles: [Double] = [0, 0, 0]
+    @State private var avatarBobs: [CGFloat] = [0, 0, 0]
+    @State private var avatarFloating: [CGFloat] = [0, 0, 0]
     
     var body: some View {
         ZStack {
@@ -62,49 +67,6 @@ struct ScholarSwiperSplashView: View {
                 .zIndex(2)
             CometView(delay: 1.5)
                 .zIndex(1)
-
-            // Add the floating astronaut animals
-            ZStack { // This ZStack groups the animals and shuttle for takeoff
-                GeometryReader { geo in
-                    let geoSize = geo.size
-                    // Calculate shuttle seat positions (relative to the top band)
-                    let shuttleY: CGFloat = 80
-                    let seatXs: [CGFloat] = [geoSize.width/2 - 50, geoSize.width/2, geoSize.width/2 + 50]
-                    // Animals: floating, lining up, or in shuttle
-                    ForEach(animals.indices, id: \ .self) { i in
-                        let animal = animals[i]
-                        // Animals float, then line up, then fall into seats (no duplicates)
-                        let startPos = liningUp ? CGPoint(x: seatXs[i], y: shuttleY - 30) : animal.position
-                        let endPos = CGPoint(x: seatXs[i], y: shuttleY + 10)
-                        let displayPos: CGPoint = (showShuttle && shuttleArrived && animalSeated[i]) ? endPos : startPos
-                        let displayAngle: Double = 0.0
-                        let displayBob: CGFloat = 0.0
-                        Group {
-                            switch animal.type {
-                            case .cat:
-                                FloatingAstronautCatView(position: displayPos, angle: displayAngle, bob: displayBob)
-                            case .dog:
-                                FloatingAstronautDogView(position: displayPos, angle: displayAngle, bob: displayBob)
-                            case .bunny:
-                                FloatingAstronautBunnyView(position: displayPos, angle: displayAngle, bob: displayBob)
-                            }
-                        }
-                        .frame(width: animal.size.width, height: animal.size.height)
-                        .zIndex(4)
-                        .animation(.interpolatingSpring(stiffness: 180, damping: 14), value: displayPos)
-                    }
-                    // Space shuttle pickup overlays the animals
-                    if showShuttle {
-                        SpaceShuttleView(animals: [AnyView(EmptyView()), AnyView(EmptyView()), AnyView(EmptyView())], showTrail: true)
-                            .offset(x: shuttleOffset, y: shuttleY)
-                            .zIndex(5)
-                            .transition(.move(edge: .leading))
-                            .animation(.easeOut(duration: 1.0), value: shuttleOffset)
-                    }
-                }
-            }
-            .offset(y: takeoffY)
-            .animation(.easeInOut(duration: 1.0), value: takeoffY)
 
             VStack(spacing: 0) {
                 Spacer()
@@ -129,18 +91,22 @@ struct ScholarSwiperSplashView: View {
                                     .fill(RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.25), .clear]), center: .center, startRadius: 10, endRadius: 80))
                                     .frame(width: 120, height: 120)
                                 // Grad cap icon in the center
-                                Image(systemName: "graduationcap.fill")
+                                Image("SplashCateLogo")
                                     .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 64, height: 64)
-                                    .foregroundColor(.white)
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: logoCardSize, height: logoCardSize)
+                                    .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
                                     .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
                                     .overlay(
-                                        // Subtle white outer glow
-                                        Circle()
+                                        RoundedRectangle(cornerRadius: 36, style: .continuous)
                                             .stroke(Color.white.opacity(0.45), lineWidth: 10)
                                             .blur(radius: 8)
                                     )
+                                    .scaleEffect(cardPulse ? 1.02 : 0.98)
+                                    .animation(Animation.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: cardPulse)
+                                    .onAppear {
+                                        cardPulse = true
+                                    }
                             }
                         )
                        
@@ -178,95 +144,25 @@ struct ScholarSwiperSplashView: View {
                 Spacer()
                 // Rocket Launch Button
                 Button(action: {
-                    withAnimation(.easeInOut(duration: 0.7)) {
-                        rocketLaunched = true
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        iconPop = true
                     }
-                    // Step 1: Animals line up above shuttle
-                    liningUp = true
-                    // Step 2: Shuttle flies in and aligns (empty)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                        showShuttle = true
-                        withAnimation(.easeOut(duration: 1.0)) {
-                            shuttleOffset = 40
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            iconPop = false
                         }
                     }
-                    // Step 3: When shuttle stops, animals fall into seats
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) {
-                        shuttleArrived = true
-                        for i in 0..<animalSeated.count {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.18) {
-                                withAnimation(.interpolatingSpring(stiffness: 180, damping: 14)) {
-                                    animalSeated[i] = true
-                                }
-                            }
-                        }
-                    }
-                    // Step 4: Shuttle takes off
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
-                        takeoffY = -400
-                    }
-                    // Step 5: Proceed with onboarding
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.1) {
+                    // After 1 second, proceed to onboarding
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         onLaunch?()
                     }
                 }) {
-                    ZStack {
-                        // Double pulse/ripple effect
-                        if showButtonPulse2 {
-                            Circle()
-                                .stroke(LinearGradient(gradient: Gradient(colors: [Color.purple.opacity(0.5), Color.blue.opacity(0.3), .clear]), startPoint: .top, endPoint: .bottom), lineWidth: 12)
-                                .frame(width: 120, height: 120)
-                                .scaleEffect(showButtonPulse2 ? 1.9 : 1.0)
-                                .opacity(showButtonPulse2 ? 0 : 0.5)
-                                .animation(Animation.easeOut(duration: 0.9), value: showButtonPulse2)
-                        }
-                        if showButtonPulse {
-                            Circle()
-                                .stroke(LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.7), Color.purple.opacity(0.3), .clear]), startPoint: .top, endPoint: .bottom), lineWidth: 8)
-                                .frame(width: 90, height: 90)
-                                .scaleEffect(showButtonPulse ? 1.7 : 1.0)
-                                .opacity(showButtonPulse ? 0 : 0.7)
-                                .animation(Animation.easeOut(duration: 0.7), value: showButtonPulse)
-                        }
-                        // Rocket launch animation: show multiple small rockets when launching
-                        ForEach(launchedRockets, id: \.self) { rocketID in
-                            AnimatedRocketView()
-                        }
-                        // Animated glowing fingerprint background
-                        FingerprintShape()
-                            .stroke(
-                                LinearGradient(gradient: Gradient(colors: [Color.purple.opacity(0.7), Color.blue.opacity(0.5), Color.white.opacity(0.7)]), startPoint: .topLeading, endPoint: .bottomTrailing),
-                                lineWidth: 3.5
-                            )
-                            .frame(width: 80, height: 80)
-                            .blur(radius: rocketLaunched ? 0 : 0.5)
-                            .scaleEffect(rocketLaunched ? 1.2 : 1.0)
-                            .opacity(rocketLaunched ? 0.2 : 1)
-                            .shadow(color: Color.purple.opacity(0.25), radius: 16, x: 0, y: 8)
-                            .shadow(color: Color.blue.opacity(0.18), radius: 8, x: 0, y: 2)
-                            .animation(Animation.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: rocketLaunched)
-                        // Fingerprint icon (replaces rocket)
-                        Image(systemName: "touchid")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 44, height: 44)
-                            .foregroundColor(.white)
-                            .shadow(color: Color.purple.opacity(0.7), radius: 18, x: 0, y: 8)
-                            .shadow(color: Color.blue.opacity(0.5), radius: 8, x: 0, y: 2)
-                            .scaleEffect(iconPop ? 1.22 : (rocketLaunched ? 1.3 : 1.0))
-                            .opacity(rocketLaunched ? 0 : 1)
-                            .animation(.spring(response: 0.28, dampingFraction: 0.45), value: iconPop)
-                            .animation(.easeInOut(duration: 0.7), value: rocketLaunched)
-                            .overlay(
-                                // Animated glow
-                                Circle()
-                                    .stroke(Color.white.opacity(rocketLaunched ? 0.0 : 0.7), lineWidth: 6)
-                                    .scaleEffect(rocketLaunched ? 1.7 : 1.2)
-                                    .blur(radius: 8)
-                                    .opacity(rocketLaunched ? 0 : 1)
-                                    .animation(.easeInOut(duration: 0.7), value: rocketLaunched)
-                            )
-                    }
+                    Image("startButton2")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 170, height: 170)
+                        .scaleEffect(iconPop ? 1.12 : 1.0)
+                        .animation(.spring(response: 0.28, dampingFraction: 0.45), value: iconPop)
                 }
                 .buttonStyle(PlainButtonStyle())
                 .accessibilityLabel("Launch ScholarSwiper")
@@ -274,11 +170,7 @@ struct ScholarSwiperSplashView: View {
                 .padding(.bottom, 18)
                 .opacity(showOnboarding ? 0 : 1)
                 .disabled(showOnboarding)
-                .onAppear {
-                    launchedRockets = []
-                }
             }
-            .zIndex(3)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .onAppear {
@@ -395,6 +287,30 @@ struct ScholarSwiperSplashView: View {
             }
         }
     }
+
+    private func startAvatarAnimations() {
+        // Start floating animation for each avatar immediately
+        for i in 0..<3 {
+            // Start floating immediately without delay
+            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                avatarFloating[i] = -8.0
+            }
+            
+            // Start bob animation with different timing
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.2) {
+                withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                    avatarBobs[i] = 3.0
+                }
+            }
+            
+            // Start gentle rotation
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.4) {
+                withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
+                    avatarAngles[i] = 0.3
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Background with Parallax & Constellations
@@ -417,17 +333,24 @@ struct ScholarSplashBackgroundView: View {
 // MARK: - Parallax Motion Manager
 class SplashMotionManager: ObservableObject {
     @Published var parallax: CGSize = .zero
-    private var manager = CMMotionManager()
+    private var manager: CMMotionManager? = nil
+    // Default: live motion
     init() {
-        manager.deviceMotionUpdateInterval = 1/30
-        manager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
+        manager = CMMotionManager()
+        manager?.deviceMotionUpdateInterval = 1/30
+        manager?.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
             guard let motion = motion else { return }
             let x = CGFloat(motion.attitude.roll) * 18
             let y = CGFloat(motion.attitude.pitch) * 18
             self?.parallax = CGSize(width: x, height: y)
         }
     }
-    deinit { manager.stopDeviceMotionUpdates() }
+    // Convenience: fixed parallax (no motion updates)
+    init(parallax: CGSize) {
+        self.parallax = parallax
+        self.manager = nil
+    }
+    deinit { manager?.stopDeviceMotionUpdates() }
 }
 
 // MARK: - Constellations
@@ -615,8 +538,10 @@ extension View {
 
 // MARK: - Drifting Star Field (smooth, constant motion)
 struct ScholarSplashDriftingStarFieldView: View {
-    @State private var stars: [DriftingStar] = DriftingStar.generateStars()
-    @State private var timer: Timer? = nil
+    // Use static shared state for stars and timer
+    private static var sharedStars: [DriftingStar] = DriftingStar.generateStars()
+    private static var sharedTimer: Timer? = nil
+    @State private var stars: [DriftingStar] = sharedStars
     let screenWidth = UIScreen.main.bounds.width
     let screenHeight = UIScreen.main.bounds.height
     let duration: Double = 10.0
@@ -631,23 +556,28 @@ struct ScholarSplashDriftingStarFieldView: View {
             }
         }
         .onAppear {
-            timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true) { _ in
-                withAnimation(.linear(duration: 1/60)) {
-                    stars = stars.map { star in
-                        var newStar = star
-                        newStar.position.x += newStar.dx
-                        newStar.position.y += newStar.dy
-                        // Loop star to opposite side if off-screen
-                        if newStar.position.x < -20 { newStar.position.x = screenWidth + 20 }
-                        if newStar.position.x > screenWidth + 20 { newStar.position.x = -20 }
-                        if newStar.position.y < -20 { newStar.position.y = screenHeight + 20 }
-                        if newStar.position.y > screenHeight + 20 { newStar.position.y = -20 }
-                        return newStar
+            if ScholarSplashDriftingStarFieldView.sharedTimer == nil {
+                ScholarSplashDriftingStarFieldView.sharedTimer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true) { _ in
+                    DispatchQueue.main.async {
+                        ScholarSplashDriftingStarFieldView.sharedStars = ScholarSplashDriftingStarFieldView.sharedStars.map { star in
+                            var newStar = star
+                            newStar.position.x += newStar.dx
+                            newStar.position.y += newStar.dy
+                            // Loop star to opposite side if off-screen
+                            if newStar.position.x < -20 { newStar.position.x = screenWidth + 20 }
+                            if newStar.position.x > screenWidth + 20 { newStar.position.x = -20 }
+                            if newStar.position.y < -20 { newStar.position.y = screenHeight + 20 }
+                            if newStar.position.y > screenHeight + 20 { newStar.position.y = -20 }
+                            return newStar
+                        }
                     }
                 }
             }
+            // Sync local state to shared state
+            Timer.scheduledTimer(withTimeInterval: 1/30, repeats: true) { _ in
+                self.stars = ScholarSplashDriftingStarFieldView.sharedStars
+            }
         }
-        .onDisappear { timer?.invalidate() }
     }
 }
 
@@ -745,19 +675,36 @@ struct AnimatedRocketView: View {
     let startX: CGFloat = CGFloat.random(in: -30...30)
     let rocketSize: CGFloat = CGFloat.random(in: 18...28)
     var body: some View {
-        VStack(spacing: 0) {
-            Image(systemName: "rocket.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: rocketSize, height: rocketSize)
-                .foregroundColor(.white)
-                .shadow(color: Color.purple.opacity(0.7), radius: 8, x: 0, y: 2)
-                .shadow(color: Color.blue.opacity(0.5), radius: 4, x: 0, y: 1)
+        ZStack {
+            // Shuttle body
             Capsule()
-                .fill(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.18), Color.purple.opacity(0.12), .clear]), startPoint: .top, endPoint: .bottom))
-                .frame(width: rocketSize * 0.4, height: rocketSize * 1.2)
-                .opacity(0.7)
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.white, Color.gray.opacity(0.7)]), startPoint: .leading, endPoint: .trailing))
+                .frame(width: rocketSize * 8, height: rocketSize * 2.2)
+                .shadow(color: .gray.opacity(0.3), radius: 4, x: 2, y: 2)
+            // Shuttle nose
+            Circle()
+                .fill(Color.gray)
+                .frame(width: rocketSize * 1.7, height: rocketSize * 1.7)
+                .offset(x: rocketSize * 4)
+            // Shuttle wings
+            TriangleWing()
+                .fill(Color.gray.opacity(0.7))
+                .frame(width: rocketSize * 1.7, height: rocketSize * 1.0)
+                .offset(x: -rocketSize * 2.2, y: rocketSize * 0.7)
+            TriangleWing()
+                .fill(Color.gray.opacity(0.7))
+                .frame(width: rocketSize * 1.7, height: rocketSize * 1.0)
+                .scaleEffect(x: -1, y: 1)
+                .offset(x: -rocketSize * 2.2, y: -rocketSize * 0.7)
+            // Shuttle tail fin
+            TriangleWing()
+                .fill(Color.gray)
+                .frame(width: rocketSize * 0.8, height: rocketSize * 1.4)
+                .rotationEffect(.degrees(90))
+                .offset(x: -rocketSize * 3.5)
+            // No flame/trail
         }
+        .frame(width: rocketSize * 8, height: rocketSize * 2.2)
         .offset(x: startX, y: yOffset)
         .opacity(opacity)
         .onAppear {

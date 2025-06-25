@@ -14,8 +14,7 @@ public struct UserProfile: Codable {
     
     public enum AvatarType: String, Codable {
         case cat
-        case bear
-        case bunny
+        case fox
         case dog
     }
     

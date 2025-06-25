@@ -78,6 +78,15 @@ struct OnboardingView: View {
     @State private var shuttleAngle: Double = 0.0
     @State private var rockingAngle: Double = 0.0 // For gentle rocking
     
+    // Add floating astronaut state
+    @State private var onboardingAstronauts: [FloatingSplashAstronaut] = [
+        FloatingSplashAstronaut(imageName: "clearIcon", position: CGPoint(x: 80, y: 120), velocity: CGVector(dx: 0.6, dy: 0.4), angle: 0, angleSpeed: 0.004, size: 70),
+        FloatingSplashAstronaut(imageName: "clearIcon1", position: CGPoint(x: 200, y: 180), velocity: CGVector(dx: -0.5, dy: 0.55), angle: 0, angleSpeed: -0.005, size: 68),
+        FloatingSplashAstronaut(imageName: "clearIcon2", position: CGPoint(x: 300, y: 100), velocity: CGVector(dx: 0.35, dy: -0.65), angle: 0, angleSpeed: 0.003, size: 74),
+        FloatingSplashAstronaut(imageName: "clearIcon3", position: CGPoint(x: 120, y: 300), velocity: CGVector(dx: -0.55, dy: -0.35), angle: 0, angleSpeed: 0.006, size: 72)
+    ]
+    @State private var astronautOscillationPhase: Double = 0
+    
     private let pages = [
         OnboardingPage(
             title: "Explore the Galaxy of Scholarships",
@@ -133,6 +142,23 @@ struct OnboardingView: View {
             }
             .zIndex(3)
 
+            // Floating astronaut cats (restricted to upper half)
+            GeometryReader { geo in
+                let screenHeight = geo.size.height
+                ForEach(onboardingAstronauts.indices, id: \ .self) { i in
+                    let astro = onboardingAstronauts[i]
+                    Image(astro.imageName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: astro.size, height: astro.size)
+                        .rotationEffect(.radians(astro.angle + sin(astronautOscillationPhase + Double(i)) * 0.18))
+                        .position(x: astro.position.x, y: min(astro.position.y, screenHeight * 0.20))
+                        .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                        .animation(.easeInOut(duration: 0.7), value: astro.position)
+                }
+            }
+            .zIndex(2)
+
             VStack {
                 TabView(selection: $currentPage) {
                     ForEach(pages.indices, id: \.self) { index in
@@ -184,6 +210,40 @@ struct OnboardingView: View {
         }
         .onAppear {
             animateBackground = true
+            // Start floating astronaut animation
+            Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
+                let screen = UIScreen.main.bounds
+                let upperLimit = screen.height * 0.20
+                for i in onboardingAstronauts.indices {
+                    var astro = onboardingAstronauts[i]
+                    // Move
+                    astro.position.x += astro.velocity.dx
+                    astro.position.y += astro.velocity.dy
+                    // Bounce off left/right edges
+                    if astro.position.x < astro.size/2 || astro.position.x > screen.width - astro.size/2 {
+                        astro.velocity.dx *= -1
+                        astro.position.x = min(max(astro.size/2, astro.position.x), screen.width - astro.size/2)
+                    }
+                    // Bounce off top/upper half only
+                    if astro.position.y < astro.size/2 {
+                        astro.velocity.dy *= -1
+                        astro.position.y = astro.size/2
+                    } else if astro.position.y > upperLimit - astro.size/2 {
+                        astro.velocity.dy *= -1
+                        astro.position.y = upperLimit - astro.size/2
+                    }
+                    // Gentle angle rotation, but keep mostly upright
+                    astro.angle += astro.angleSpeed
+                    astro.angle = min(max(astro.angle, -0.2), 0.2)
+                    // Occasional random direction change
+                    if Int.random(in: 0...400) == 0 {
+                        astro.velocity.dx += Double.random(in: -0.2...0.2)
+                        astro.velocity.dy += Double.random(in: -0.2...0.2)
+                    }
+                    onboardingAstronauts[i] = astro
+                }
+                astronautOscillationPhase += 0.025
+            }
         }
         .fullScreenCover(isPresented: $showGetStarted) {
             ProfileSetupView(isOnboarding: true)
@@ -247,39 +307,173 @@ struct OnboardingPageView: View {
     @State private var showContent = false
     @State private var iconBounce = false
     @State private var shimmerPhase: CGFloat = 0
+    @State private var imagePulse = false
     var body: some View {
         VStack(spacing: 36) {
             // Animated, glassmorphic card for icon
             ZStack {
-                RoundedRectangle(cornerRadius: 36, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                cardPulse ? Color.purple : Color.blue,
-                                cardPulse ? Color.pink : Color.purple.opacity(0.7)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 140, height: 140)
-                    .shadow(color: Color.purple.opacity(0.18), radius: 18, x: 0, y: 8)
-                    .overlay(
-                        AvatarFactory.createAvatar(type: page.avatarType, size: 100, isInteractive: true)
-                            .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
-                            .scaleEffect(iconBounce ? 1.15 : 1.0)
-                            .animation(.interpolatingSpring(stiffness: 180, damping: 8).delay(0.1), value: iconBounce)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white.opacity(0.32), lineWidth: 7)
-                                    .blur(radius: 6)
+                if page.avatarType == .cosmicCat {
+                    // Copy splash formatting for testerCat
+                    let logoCardSize: CGFloat = 160
+                    RoundedRectangle(cornerRadius: 36, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    cardPulse ? Color.purple : Color.blue,
+                                    cardPulse ? Color.pink : Color.purple.opacity(0.7)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
-                           
-                    )
-                    .glassEffect()
-                    .scaleEffect(showContent ? 1 : 0.8)
-                    .opacity(showContent ? 1 : 0)
-                    .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
+                        )
+                        .frame(width: logoCardSize, height: logoCardSize)
+                        .overlay(
+                            ZStack {
+                                // Soft spotlight/glow
+                                Circle()
+                                    .fill(RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.25), .clear]), center: .center, startRadius: 10, endRadius: 80))
+                                    .frame(width: 120, height: 120)
+                                // testerCat icon in the center
+                                Image("testerCat")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: logoCardSize, height: logoCardSize)
+                                    .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                                    .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                            .stroke(Color.white.opacity(0.45), lineWidth: 10)
+                                            .blur(radius: 8)
+                                    )
+                                    .scaleEffect(imagePulse ? 1.02 : 0.98)
+                                    .animation(Animation.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: imagePulse)
+                                    .onAppear { imagePulse = true }
+                            }
+                        )
+                        .shadow(color: Color.purple.opacity(0.18), radius: 24, x: 0, y: 12)
+                        .padding(.bottom, 8)
+                        .glassEffect()
+                        .scaleEffect(showContent ? 1 : 0.8)
+                        .opacity(showContent ? 1 : 0)
+                        .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
+                } else if page.avatarType == .spaceDog {
+                    // Copy splash formatting for NewOne
+                    let logoCardSize: CGFloat = 160
+                    RoundedRectangle(cornerRadius: 36, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    cardPulse ? Color.purple : Color.blue,
+                                    cardPulse ? Color.pink : Color.purple.opacity(0.7)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: logoCardSize, height: logoCardSize)
+                        .overlay(
+                            ZStack {
+                                // Soft spotlight/glow
+                                Circle()
+                                    .fill(RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.25), .clear]), center: .center, startRadius: 10, endRadius: 80))
+                                    .frame(width: 120, height: 120)
+                                // NewOne icon in the center
+                                Image("NewOne")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: logoCardSize, height: logoCardSize)
+                                    .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                                    .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                            .stroke(Color.white.opacity(0.45), lineWidth: 10)
+                                            .blur(radius: 8)
+                                    )
+                                    .scaleEffect(imagePulse ? 1.02 : 0.98)
+                                    .animation(Animation.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: imagePulse)
+                                    .onAppear { imagePulse = true }
+                            }
+                        )
+                        .shadow(color: Color.purple.opacity(0.18), radius: 24, x: 0, y: 12)
+                        .padding(.bottom, 8)
+                        .glassEffect()
+                        .scaleEffect(showContent ? 1 : 0.8)
+                        .opacity(showContent ? 1 : 0)
+                        .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
+                } else if page.avatarType == .starFox {
+                    // Copy splash formatting for surfCat
+                    let logoCardSize: CGFloat = 160
+                    RoundedRectangle(cornerRadius: 36, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    cardPulse ? Color.purple : Color.blue,
+                                    cardPulse ? Color.pink : Color.purple.opacity(0.7)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: logoCardSize, height: logoCardSize)
+                        .overlay(
+                            ZStack {
+                                // Soft spotlight/glow
+                                Circle()
+                                    .fill(RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.25), .clear]), center: .center, startRadius: 10, endRadius: 80))
+                                    .frame(width: 120, height: 120)
+                                // surfCat icon in the center
+                                Image("surfCat")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: logoCardSize, height: logoCardSize)
+                                    .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                                    .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                            .stroke(Color.white.opacity(0.45), lineWidth: 10)
+                                            .blur(radius: 8)
+                                    )
+                                    .scaleEffect(imagePulse ? 1.02 : 0.98)
+                                    .animation(Animation.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: imagePulse)
+                                    .onAppear { imagePulse = true }
+                            }
+                        )
+                        .shadow(color: Color.purple.opacity(0.18), radius: 24, x: 0, y: 12)
+                        .padding(.bottom, 8)
+                        .glassEffect()
+                        .scaleEffect(showContent ? 1 : 0.8)
+                        .opacity(showContent ? 1 : 0)
+                        .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
+                } else {
+                    RoundedRectangle(cornerRadius: 36, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    cardPulse ? Color.purple : Color.blue,
+                                    cardPulse ? Color.pink : Color.purple.opacity(0.7)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 140, height: 140)
+                        .shadow(color: Color.purple.opacity(0.18), radius: 18, x: 0, y: 8)
+                        .overlay(
+                            AvatarFactory.createAvatar(type: page.avatarType, size: 100, isInteractive: true)
+                                .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                                .scaleEffect(iconBounce ? 1.15 : 1.0)
+                                .animation(.interpolatingSpring(stiffness: 180, damping: 8).delay(0.1), value: iconBounce)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white.opacity(0.32), lineWidth: 7)
+                                        .blur(radius: 6)
+                                )
+                        )
+                        .glassEffect()
+                        .scaleEffect(showContent ? 1 : 0.8)
+                        .opacity(showContent ? 1 : 0)
+                        .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
+                }
             }
                 // Title
                 Text(page.title)
@@ -320,4 +514,14 @@ struct OnboardingPageView: View {
 
 #Preview {
     OnboardingView()
+}
+
+// Add struct for floating astronaut at the bottom
+struct FloatingSplashAstronaut {
+    var imageName: String
+    var position: CGPoint
+    var velocity: CGVector
+    var angle: Double
+    var angleSpeed: Double
+    var size: CGFloat
 } 

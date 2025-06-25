@@ -5,21 +5,19 @@ struct ScholarshipMatchView: View {
     @State private var showMascot = false
     @State private var perfectMatchScholarship: Scholarship?
     @State private var dismissedScholarships: Set<UUID> = []
+    @StateObject private var motion = SplashMotionManager()
     
     var body: some View {
         ZStack {
-            backgroundView
+            ScholarSplashBackgroundView(motion: motion)
+                .ignoresSafeArea()
+            ScholarSplashDriftingStarFieldView()
             contentView
             mascotView
         }
         .onAppear {
             viewModel.updateMatchedScholarships()
         }
-    }
-    
-    private var backgroundView: some View {
-        Theme.primaryGradient
-            .ignoresSafeArea()
     }
     
     private var contentView: some View {
