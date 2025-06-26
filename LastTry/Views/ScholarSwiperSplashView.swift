@@ -158,11 +158,11 @@ struct ScholarSwiperSplashView: View {
                     }
                 }) {
                     Image("startButton2")
-                        .resizable()
-                        .scaledToFit()
+                            .resizable()
+                            .scaledToFit()
                         .frame(width: 170, height: 170)
                         .scaleEffect(iconPop ? 1.12 : 1.0)
-                        .animation(.spring(response: 0.28, dampingFraction: 0.45), value: iconPop)
+                            .animation(.spring(response: 0.28, dampingFraction: 0.45), value: iconPop)
                 }
                 .buttonStyle(PlainButtonStyle())
                 .accessibilityLabel("Launch ScholarSwiper")

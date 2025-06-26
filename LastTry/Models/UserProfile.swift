@@ -13,9 +13,9 @@ public struct UserProfile: Codable {
     public var lastLoginDate: Date?
     
     public enum AvatarType: String, Codable {
-        case cat
-        case fox
-        case dog
+        case luna
+        case nova
+        case chill
     }
     
     public init(name: String, gender: String, ethnicity: String, fieldOfStudy: String, gradeLevel: String, gpa: Double? = nil, avatarType: AvatarType, streakCount: Int = 0, lastLoginDate: Date? = nil) {

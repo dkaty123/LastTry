@@ -25,6 +25,15 @@ struct HomeView: View {
     // Timer for floating animation
     @State private var avatarTimer: Timer? = nil
     @StateObject private var staticMotion = SplashMotionManager(parallax: .zero)
+    @State private var floatingCat = HomeFloatingAstronaut(
+        imageName: "clearIcon",
+        position: CGPoint(x: 120, y: 120),
+        velocity: CGVector(dx: 0.7, dy: 0.5),
+        angle: 0,
+        angleSpeed: 0.004,
+        size: 80
+    )
+    @State private var floatingCatOscillation: Double = 0
     
     init() {
         // Set the navigation bar appearance
@@ -45,28 +54,60 @@ struct HomeView: View {
                 .ignoresSafeArea()
             ScholarSplashDriftingStarFieldView()
                 .id("starfield")
-            // Animated astronaut avatars (floating)
-            AstronautCatView(size: avatarSize)
-                .position(catPosition)
-                .rotationEffect(.degrees(catAngle))
-                .offset(y: catBob)
-                .animation(.easeInOut(duration: 2.2), value: catPosition)
-                .animation(.easeInOut(duration: 2.2), value: catAngle)
-                .animation(.easeInOut(duration: 2.2), value: catBob)
-            AstronautDogView(size: avatarSize)
-                .position(dogPosition)
-                .rotationEffect(.degrees(dogAngle))
-                .offset(y: dogBob)
-                .animation(.easeInOut(duration: 2.5), value: dogPosition)
-                .animation(.easeInOut(duration: 2.5), value: dogAngle)
-                .animation(.easeInOut(duration: 2.5), value: dogBob)
-            AstronautFoxView(size: avatarSize)
-                .position(foxPosition)
-                .rotationEffect(.degrees(foxAngle))
-                .offset(y: foxBob)
-                .animation(.easeInOut(duration: 2.8), value: foxPosition)
-                .animation(.easeInOut(duration: 2.8), value: foxAngle)
-                .animation(.easeInOut(duration: 2.8), value: foxBob)
+            // Floating astronaut cat (user's pick)
+            GeometryReader { geo in
+                let screenHeight = geo.size.height
+                let imageName: String = {
+                    switch viewModel.userProfile?.avatarType {
+                    case .luna: return "clearIcon"
+                    case .nova: return "clearIcon2"
+                    case .chill: return "clearIcon3"
+                    default: return "clearIcon"
+                    }
+                }()
+                Image(imageName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: floatingCat.size, height: floatingCat.size)
+                    .rotationEffect(.radians(floatingCat.angle + sin(floatingCatOscillation) * 0.18))
+                    .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22))
+                    .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                    .animation(.easeInOut(duration: 0.7), value: floatingCat.position)
+                    .onAppear {
+                        Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
+                            let screen = UIScreen.main.bounds
+                            let upperLimit = screen.height * 0.22
+                            var cat = floatingCat
+                            // Move
+                            cat.position.x += cat.velocity.dx
+                            cat.position.y += cat.velocity.dy
+                            // Bounce off left/right edges
+                            if cat.position.x < cat.size/2 || cat.position.x > screen.width - cat.size/2 {
+                                cat.velocity.dx *= -1
+                                cat.position.x = min(max(cat.size/2, cat.position.x), screen.width - cat.size/2)
+                            }
+                            // Bounce off top/upper half only
+                            if cat.position.y < cat.size/2 {
+                                cat.velocity.dy *= -1
+                                cat.position.y = cat.size/2
+                            } else if cat.position.y > upperLimit - cat.size/2 {
+                                cat.velocity.dy *= -1
+                                cat.position.y = upperLimit - cat.size/2
+                            }
+                            // Gentle angle rotation, but keep mostly upright
+                            cat.angle += cat.angleSpeed
+                            cat.angle = min(max(cat.angle, -0.2), 0.2)
+                            // Occasional random direction change
+                            if Int.random(in: 0...400) == 0 {
+                                cat.velocity.dx += Double.random(in: -0.2...0.2)
+                                cat.velocity.dy += Double.random(in: -0.2...0.2)
+                            }
+                            floatingCat = cat
+                            floatingCatOscillation += 0.025
+                        }
+                    }
+            }
+            .zIndex(1)
             VStack {
                 if currentIndex < viewModel.scholarships.count {
                     ScholarshipCardView(scholarship: viewModel.scholarships[currentIndex])
@@ -141,77 +182,6 @@ struct HomeView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Notifications")
-                    .font(.headline)
-                    .foregroundColor(.white)
-            }
-            
-            ToolbarItem(placement: .navigationBarLeading) {
-                HStack(spacing: 20) {
-                    NavigationLink(destination: ProfileView()) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                    
-                    Button(action: { showSearch = true }) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                    
-                    NavigationLink(destination: SmartFiltersView()) {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                }
-            }
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: 20) {
-                    NavigationLink(destination: FinancialPlanningView()) {
-                        Image(systemName: "dollarsign.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                    
-                    NavigationLink(destination: ScholarshipStatsView()) {
-                        Image(systemName: "chart.bar.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                    
-                    NavigationLink(destination: SavedScholarshipsView()) {
-                        Image(systemName: "bookmark.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                    
-                    NavigationLink(destination: AchievementsView()) {
-                        Image(systemName: "trophy.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                    
-                    NavigationLink(destination: NotificationsView()) {
-                        Image(systemName: "bell.fill")
-                            .font(.system(size: 20))
-                        .foregroundColor(.white)
-                    }
-                    
-                    NavigationLink(destination: AvatarGridPageView()) {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                    
-                    Spacer()
-                }
-            }
-        }
         .sheet(isPresented: $showSearch) {
             SmartSearchView()
         }
@@ -381,6 +351,16 @@ struct HomeView: View {
         let dy = a.y - b.y
         return sqrt(dx*dx + dy*dy)
     }
+}
+
+// Add struct for floating astronaut at the bottom
+struct HomeFloatingAstronaut {
+    var imageName: String
+    var position: CGPoint
+    var velocity: CGVector
+    var angle: Double
+    var angleSpeed: Double
+    var size: CGFloat
 }
 
 #Preview {

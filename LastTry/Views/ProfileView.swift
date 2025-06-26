@@ -24,12 +24,21 @@ struct ProfileView: View {
                                 Group {
                                     if let avatarType = viewModel.userProfile?.avatarType {
                                         Group {
-                                            if avatarType == .cat {
-                                                AstronautCatView(size: 120)
-                                            } else if avatarType == .fox {
-                                                AstronautFoxView(size: 120)
-                                            } else if avatarType == .dog {
-                                                AstronautDogView(size: 120)
+                                            if avatarType == .luna {
+                                                Image("clearIcon")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 120, height: 120)
+                                            } else if avatarType == .nova {
+                                                Image("clearIcon2")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 120, height: 120)
+                                            } else if avatarType == .chill {
+                                                Image("clearIcon3")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 120, height: 120)
                                             }
                                         }
                                     } else {

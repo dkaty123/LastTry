@@ -89,25 +89,25 @@ struct OnboardingView: View {
     
     private let pages = [
         OnboardingPage(
-            title: "Explore the Galaxy of Scholarships",
-            description: "Discover amazing opportunities that match your cosmic journey",
+            title: "Explore the \n Galaxy of Scholarships",
+            description: "Discover amazing opportunities \n that match your cosmic journey",
             avatarType: .cosmicCat,
             accentColor: .yellow
         ),
         OnboardingPage(
-            title: "Save the Ones That Match Your Orbit",
-            description: "Keep track of scholarships that align with your goals",
+            title: "Save the Ones \n That Match Your Orbit",
+            description: "Keep track of scholarships \n that align with your goals",
             avatarType: .spaceDog,
             accentColor: .blue
         ),
         OnboardingPage(
             title: "Launch Your Education Journey!",
-            description: "Take the first step towards your stellar future",
+            description: "Take the first step \n towards your stellar future",
             avatarType: .starFox,
             accentColor: .orange
         )
     ]
-    
+
     var body: some View {
         ZStack {
             // Animated, parallax background
@@ -159,6 +159,7 @@ struct OnboardingView: View {
             }
             .zIndex(2)
 
+            ZStack(alignment: .bottom) {
             VStack {
                 TabView(selection: $currentPage) {
                     ForEach(pages.indices, id: \.self) { index in
@@ -168,44 +169,23 @@ struct OnboardingView: View {
                 }
                 .tabViewStyle(.page)
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
-                // Next/Get Started button
+                }
+                if currentPage == pages.count - 1 {
                 Button(action: {
-                    if currentPage < pages.count - 1 {
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-                            currentPage += 1
-                        }
-                    } else {
                         withAnimation(.easeInOut(duration: 0.5)) {
                             showGetStarted = true
                         }
-                    }
                 }) {
-                    Text(currentPage < pages.count - 1 ? "Next" : "Get Started")
-                        .font(Font.custom("SF Pro Rounded", size: 20).weight(.bold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [Color.purple, Color.blue, Color.pink]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .shadow(color: Color.purple.opacity(0.18), radius: 12, x: 0, y: 6)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(Color.white.opacity(0.13), lineWidth: 1.5)
-                        )
+                        Image("nextButton")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 100)
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 60)
                         .opacity(0.98)
                 }
                 .buttonStyle(PlainButtonStyle())
-                .padding(.horizontal, 24)
-                .padding(.bottom, 18)
-                .opacity(0.98)
+                }
             }
         }
         .onAppear {
@@ -445,34 +425,34 @@ struct OnboardingPageView: View {
                         .opacity(showContent ? 1 : 0)
                         .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
                 } else {
-                    RoundedRectangle(cornerRadius: 36, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    cardPulse ? Color.purple : Color.blue,
-                                    cardPulse ? Color.pink : Color.purple.opacity(0.7)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                RoundedRectangle(cornerRadius: 36, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                cardPulse ? Color.purple : Color.blue,
+                                cardPulse ? Color.pink : Color.purple.opacity(0.7)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+                    .shadow(color: Color.purple.opacity(0.18), radius: 18, x: 0, y: 8)
+                    .overlay(
+                        AvatarFactory.createAvatar(type: page.avatarType, size: 100, isInteractive: true)
+                            .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                            .scaleEffect(iconBounce ? 1.15 : 1.0)
+                            .animation(.interpolatingSpring(stiffness: 180, damping: 8).delay(0.1), value: iconBounce)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white.opacity(0.32), lineWidth: 7)
+                                    .blur(radius: 6)
                             )
-                        )
-                        .frame(width: 140, height: 140)
-                        .shadow(color: Color.purple.opacity(0.18), radius: 18, x: 0, y: 8)
-                        .overlay(
-                            AvatarFactory.createAvatar(type: page.avatarType, size: 100, isInteractive: true)
-                                .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
-                                .scaleEffect(iconBounce ? 1.15 : 1.0)
-                                .animation(.interpolatingSpring(stiffness: 180, damping: 8).delay(0.1), value: iconBounce)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.white.opacity(0.32), lineWidth: 7)
-                                        .blur(radius: 6)
-                                )
-                        )
-                        .glassEffect()
-                        .scaleEffect(showContent ? 1 : 0.8)
-                        .opacity(showContent ? 1 : 0)
-                        .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
+                    )
+                    .glassEffect()
+                    .scaleEffect(showContent ? 1 : 0.8)
+                    .opacity(showContent ? 1 : 0)
+                    .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
                 }
             }
                 // Title

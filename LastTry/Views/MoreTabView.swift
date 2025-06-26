@@ -8,6 +8,8 @@ struct MoreTabView: View {
             ScholarSplashBackgroundView(motion: motion)
                 .ignoresSafeArea()
             ScholarSplashDriftingStarFieldView()
+            
+            ScrollView {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Image(systemName: "sparkles")
@@ -58,8 +60,10 @@ struct MoreTabView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 4)
-                Spacer()
+                    .padding(.bottom, 100) // Add bottom padding for navigation bar
+                }
             }
+            .scrollIndicators(.hidden)
         }
     }
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Profile Particle System
 struct ProfileParticle: Identifiable {
@@ -79,7 +80,7 @@ struct ProfileSetupView: View {
     @State private var fieldOfStudy = ""
     @State private var gradeLevel = ""
     @State private var gpa = ""
-    @State private var selectedAvatar: UserProfile.AvatarType = .cat
+    @State private var selectedAvatar: String = "clearIcon"
     @State private var showHome = false
     @State private var currentStep = 0
     @State private var showConfetti = false
@@ -99,19 +100,8 @@ struct ProfileSetupView: View {
             ScholarSplashBackgroundView(motion: motion)
                 .ignoresSafeArea()
             ScholarSplashDriftingStarFieldView()
-            // Top right star (slightly lower and more inward)
-            FloatingWinkingStarView(size: 54)
-                .position(x: UIScreen.main.bounds.width - 80, y: 130)
-            // Bottom left star (move further up)
-            FloatingWinkingStarView(size: 38)
-                .position(x: 70, y: UIScreen.main.bounds.height - 260)
-            // Top left planet (lower and more inward)
-            AnimatedPlanetView(size: 60, planetColor: .blue, ringColor: .purple)
-                .position(x: 90, y: 170)
-            // Bottom right planet (move further up)
-            AnimatedPlanetView(size: 44, planetColor: .green, ringColor: .yellow)
-                .position(x: UIScreen.main.bounds.width - 90, y: UIScreen.main.bounds.height - 240)
-            VStack(spacing: 20) {
+            // (Rocketship and star removed)
+            VStack(spacing: 45) {
                 // Progress indicator
                 HStack(spacing: 20) {
                     ForEach(0..<steps.count, id: \.self) { index in
@@ -132,62 +122,21 @@ struct ProfileSetupView: View {
                 Text(stepTitle(for: currentStep))
                     .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
                     .foregroundColor(.white)
+                // Onboarding-style image card below title, per step
+                OnboardingProfileImageCard(step: currentStep)
                 
                 TabView(selection: $currentStep) {
-                    // Avatar Selection
                     avatarSelectionView
                         .tag(0)
-                    
-                    // Basic Information
                     basicInfoView
                         .tag(1)
-                    
-                    // Education Details
                     educationView
                         .tag(2)
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
+                .tabViewStyle(.page)
+                .indexViewStyle(.page(backgroundDisplayMode: .always))
                 
-                // Navigation Buttons
-                HStack(spacing: 20) {
-                    if currentStep > 0 {
-                        Button(action: { withAnimation { currentStep -= 1 } }) {
-                            HStack {
-                                Image(systemName: "chevron.left")
-                                Text("Back")
-                            }
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .fill(Theme.cardBackground)
-                            )
-                        }
-                    }
-                    
-                    Button(action: handleNext) {
-                        HStack {
-                            Text(currentStep < steps.count - 1 ? "Next" : "Launch Profile")
-                            if currentStep < steps.count - 1 {
-                                Image(systemName: "chevron.right")
-                            } else {
-                                Image(systemName: "rocket.fill")
-                            }
-                        }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 15)
-                                .fill(Theme.accentColor)
-                        )
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 30)
+                // (No nextButton image on the last page; navigation is via swipe)
             }
         }
         .fullScreenCover(isPresented: $showHome) {
@@ -213,113 +162,115 @@ struct ProfileSetupView: View {
     }
     
     private var avatarSelectionView: some View {
-        VStack(spacing: 20) {
-            Text("Choose Your Space Explorer")
-                .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
+        let avatarNames = [
+            "clearIcon": "Luna",
+            "clearIcon2": "Nova",
+            "clearIcon3": "Chill"
+        ]
+        let avatarFacts = [
+            "clearIcon": "Loves to explore new scholarships!",
+            "clearIcon2": "Has visited every planet in the galaxy!",
+            "clearIcon3": "Can nap in zero gravity."
+        ]
+        return Group {
+            VStack(spacing: 10) {
+                Text("Meet Your Crew")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
-                .shadow(color: Theme.accentColor.opacity(0.3), radius: 5, x: 0, y: 2)
-            HStack(spacing: 20) {
-                ForEach([UserProfile.AvatarType.cat, .fox, .dog], id: \.self) { avatar in
-                    VStack {
-                        switch avatar {
-                        case .cat:
-                            AstronautCatView(size: 100)
-                                .scaleEffect(selectedAvatar == avatar ? 1.1 : 1.0)
-                                .overlay(
-                                    Circle()
-                                        .stroke(selectedAvatar == avatar ? Theme.accentColor : Color.clear, lineWidth: 3)
-                                        .frame(width: 110, height: 110)
+                    .shadow(color: .purple.opacity(0.3), radius: 5, x: 0, y: 2)
+                Text("Pick your favorite space cat!")
+                    .font(.body.weight(.bold))
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .padding(.bottom, 8)
+                HStack(spacing: 14) {
+                    ForEach(["clearIcon", "clearIcon2", "clearIcon3"], id: \.self) { avatar in
+                        ZStack {
+                            // 3D, shiny, glassy card
+                            RoundedRectangle(cornerRadius: 22)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.pink.opacity(0.32), Color.purple.opacity(0.32)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                                .id("cat_avatar")
-                        case .fox:
-                            AstronautFoxView(size: 100)
-                                .scaleEffect(selectedAvatar == avatar ? 1.1 : 1.0)
+                                // Bright white border
                                 .overlay(
-                                    Circle()
-                                        .stroke(selectedAvatar == avatar ? Theme.accentColor : Color.clear, lineWidth: 3)
-                                        .frame(width: 110, height: 110)
+                                    RoundedRectangle(cornerRadius: 22)
+                                        .stroke(Color.white.opacity(0.95), lineWidth: 3.5)
                                 )
-                                .id("fox_avatar")
-                        case .dog:
-                            AstronautDogView(size: 100)
-                                .scaleEffect(selectedAvatar == avatar ? 1.1 : 1.0)
+                                // Thin black border just inside
                                 .overlay(
-                                    Circle()
-                                        .stroke(selectedAvatar == avatar ? Theme.accentColor : Color.clear, lineWidth: 3)
-                                        .frame(width: 110, height: 110)
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.black.opacity(0.18), lineWidth: 1.2)
+                                        .padding(2)
                                 )
-                                .id("dog_avatar")
+                                // Subtle dark drop shadow for 3D pop
+                                .shadow(color: .black.opacity(0.25), radius: 18, x: 0, y: 8)
+                                .frame(width: 98, height: 120)
+                            VStack(spacing: 0) {
+                                Spacer(minLength: 0)
+                                Image(avatar)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: avatar == "clearIcon2" ? 94 : 76, height: avatar == "clearIcon2" ? 94 : 76)
+                                    .scaleEffect(selectedAvatar == avatar ? 1.15 : 1.0)
+                                    .shadow(color: selectedAvatar == avatar ? .yellow : .clear, radius: 10)
+                                    .animation(.spring(), value: selectedAvatar)
+                                Spacer(minLength: 0)
+                                Text(avatarNames[avatar] ?? "")
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .padding(.bottom, 8)
                         }
+                            .frame(height: 120, alignment: .top)
                     }
                     .onTapGesture {
-                        withAnimation(.spring()) {
-                            selectedAvatar = avatar
-                        }
+                            withAnimation(.spring()) { selectedAvatar = avatar }
                     }
                 }
             }
-            .padding(.horizontal)
+                .padding(.horizontal, 8)
         }
-        .onAppear {
-            // Force animation refresh
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation {
-                    // This will trigger a view refresh and start animations
-                    selectedAvatar = selectedAvatar
-                }
-            }
+            .padding(.bottom, 110)
         }
     }
     
     private var basicInfoView: some View {
         VStack(spacing: 20) {
-            Text("Basic Information")
-                .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
-                .foregroundColor(.white)
-                .shadow(color: Theme.accentColor.opacity(0.3), radius: 5, x: 0, y: 2)
-            
             VStack(spacing: 15) {
                 FormField(title: "Name", text: $name)
-                FormField(title: "Gender", text: $gender)
-                FormField(title: "Ethnicity", text: $ethnicity)
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 15)
-                    .fill(Theme.cardBackground.opacity(0.3))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 15)
-                            .stroke(Theme.accentColor.opacity(0.3), lineWidth: 1)
-                    )
-            )
-        }
-    }
-    
-    private var educationView: some View {
-        VStack(spacing: 20) {
-            Text("Education Details")
-                .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
-                .foregroundColor(.white)
-                .shadow(color: Theme.accentColor.opacity(0.3), radius: 5, x: 0, y: 2)
-            
-            VStack(spacing: 15) {
-                FormField(title: "Field of Study", text: $fieldOfStudy)
-                
-                VStack(alignment: .leading) {
-                    Text("Grade Level")
+                // Gender Picker
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Gender")
                         .foregroundColor(.white)
-                    Picker("Grade Level", selection: $gradeLevel) {
-                        ForEach(gradeLevels, id: \.self) { level in
-                            Text(level).tag(level)
+                        .font(.body)
+                    Picker("Gender", selection: $gender) {
+                        ForEach(["", "Male", "Female", "Non-binary", "Prefer not to say"], id: \.self) { option in
+                            Text(option.isEmpty ? "Select Gender" : option).tag(option)
                         }
                     }
                     .pickerStyle(.menu)
-                    .background(Theme.cardBackground)
-                    .cornerRadius(10)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white.opacity(0.08))
+                    .cornerRadius(12)
                 }
-                
-                FormField(title: "GPA (Optional)", text: $gpa)
-                    .keyboardType(.decimalPad)
+                // Ethnicity Picker
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Ethnicity")
+                        .foregroundColor(.white)
+                        .font(.body)
+                    Picker("Ethnicity", selection: $ethnicity) {
+                        ForEach(["", "Asian", "Black or African American", "Hispanic or Latino", "Native American", "White", "Other", "Prefer not to say"], id: \.self) { option in
+                            Text(option.isEmpty ? "Select Ethnicity" : option).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white.opacity(0.08))
+                    .cornerRadius(12)
+                }
             }
             .padding()
             .background(
@@ -330,6 +281,86 @@ struct ProfileSetupView: View {
                             .stroke(Theme.accentColor.opacity(0.3), lineWidth: 1)
                     )
             )
+            .padding(.horizontal, 20)
+        }
+        .padding(.bottom, 100)
+    }
+    
+    private var educationView: some View {
+        ZStack(alignment: .bottom) {
+        VStack(spacing: 20) {
+                VStack(spacing: 15) {
+                    // Field of Study Picker
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Field of Study")
+                .foregroundColor(.white)
+                            .font(.body)
+                        Picker("Field of Study", selection: $fieldOfStudy) {
+                            ForEach(["", "Engineering", "Business", "Arts", "Science", "Education", "Health", "Law", "Other"], id: \.self) { option in
+                                Text(option.isEmpty ? "Select Field of Study" : option).tag(option)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white.opacity(0.08))
+                        .cornerRadius(12)
+                    }
+                    // Grade Level Picker
+                    VStack(alignment: .leading, spacing: 6) {
+                    Text("Grade Level")
+                        .foregroundColor(.white)
+                            .font(.body)
+                    Picker("Grade Level", selection: $gradeLevel) {
+                            ForEach(["", "Freshman", "Sophomore", "Junior", "Senior", "Graduate"], id: \.self) { option in
+                                Text(option.isEmpty ? "Select Grade Level" : option).tag(option)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white.opacity(0.08))
+                        .cornerRadius(12)
+                    }
+                    // GPA Picker
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("GPA (Optional)")
+                            .foregroundColor(.white)
+                            .font(.body)
+                        Picker("GPA", selection: $gpa) {
+                            ForEach(["", "4.0", "3.5-3.9", "3.0-3.4", "2.5-2.9", "Below 2.5"], id: \.self) { option in
+                                Text(option.isEmpty ? "Select GPA" : option).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white.opacity(0.08))
+                        .cornerRadius(12)
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Theme.cardBackground.opacity(0.3))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Theme.accentColor.opacity(0.3), lineWidth: 1)
+                    )
+            )
+                .padding(.horizontal, 20)
+            }
+            .padding(.bottom, 100)
+            // Show nextButton image only on the third page
+            if currentStep == 2 {
+                Button(action: handleNext) {
+                    Image("nextButton")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 72)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 20)
+                        .opacity(0.98)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
         }
     }
     
@@ -344,6 +375,13 @@ struct ProfileSetupView: View {
     }
     
     private func saveProfile() {
+        let avatarType: UserProfile.AvatarType
+        switch selectedAvatar {
+        case "clearIcon": avatarType = .luna
+        case "clearIcon2": avatarType = .nova
+        case "clearIcon3": avatarType = .chill
+        default: avatarType = .luna
+        }
         let profile = UserProfile(
             name: name,
             gender: gender,
@@ -351,9 +389,8 @@ struct ProfileSetupView: View {
             fieldOfStudy: fieldOfStudy,
             gradeLevel: gradeLevel,
             gpa: Double(gpa),
-            avatarType: selectedAvatar
+            avatarType: avatarType
         )
-        
         UserProfile.save(profile)
         viewModel.userProfile = profile
         viewModel.completeOnboarding()
@@ -387,14 +424,6 @@ struct ProfileSetupView: View {
             return "graduationcap.circle.fill"
         default:
             return "circle.fill"
-        }
-    }
-    
-    private var avatarIcon: String {
-        switch selectedAvatar {
-        case .cat: return "cat.fill"
-        case .fox: return "hare.fill"
-        case .dog: return "dog.fill"
         }
     }
 }
@@ -432,56 +461,6 @@ struct FormField: View {
     }
 }
 
-struct AvatarButton: View {
-    let avatar: UserProfile.AvatarType
-    let isSelected: Bool
-    let action: () -> Void
-    @State private var isHovered = false
-    
-    var body: some View {
-        Button(action: action) {
-            VStack {
-                Image(systemName: avatarIcon)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 60, height: 60)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(
-                        ZStack {
-                            Theme.cardBackground
-                            
-                            if isSelected {
-                                Circle()
-                                    .fill(Theme.accentColor.opacity(0.3))
-                                    .scaleEffect(isHovered ? 1.2 : 1.0)
-                                    .animation(.spring(response: 0.3), value: isHovered)
-                            }
-                        }
-                    )
-                    .clipShape(Circle())
-                .overlay(
-                        Circle()
-                        .stroke(isSelected ? Theme.accentColor : Color.clear, lineWidth: 2)
-                )
-                .shadow(color: isSelected ? Theme.accentColor.opacity(0.5) : Color.clear,
-                       radius: 10, x: 0, y: 5)
-            }
-        }
-        .onHover { hovering in
-            isHovered = hovering
-        }
-    }
-    
-    private var avatarIcon: String {
-        switch avatar {
-        case .cat: return "cat.fill"
-        case .fox: return "hare.fill"
-        case .dog: return "dog.fill"
-        }
-    }
-}
-
 // Confetti animation view
 struct ProfileConfettiView: View {
     @State private var isAnimating = false
@@ -513,6 +492,81 @@ struct ProfileConfettiView: View {
         }
         .onAppear {
             isAnimating = true
+        }
+    }
+}
+
+// Add this helper for glassmorphic blur
+struct BlurView: UIViewRepresentable {
+    var style: UIBlurEffect.Style = .systemMaterial
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: style))
+    }
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
+}
+
+// MARK: - Onboarding-style Profile Image Card
+struct OnboardingProfileImageCard: View {
+    let step: Int
+    @State private var imagePulse = false
+    @State private var showContent = false
+    var imageName: String {
+        switch step {
+        case 0: return "profile1"
+        case 1: return "profile2"
+        case 2: return "profile3"
+        default: return "profile1"
+        }
+    }
+    var body: some View {
+        let logoCardSize: CGFloat = 160
+        ZStack {
+            RoundedRectangle(cornerRadius: 36, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.purple,
+                            Color.pink
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: logoCardSize, height: logoCardSize)
+                .overlay(
+                    ZStack {
+                        // Soft spotlight/glow
+                        Circle()
+                            .fill(RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.25), .clear]), center: .center, startRadius: 10, endRadius: 80))
+                            .frame(width: 120, height: 120)
+                        // Main image in the center
+                        Image(imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: logoCardSize, height: logoCardSize)
+                            .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                            .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                    .stroke(Color.white.opacity(0.45), lineWidth: 10)
+                                    .blur(radius: 8)
+                            )
+                            .scaleEffect(imagePulse ? 1.02 : 0.98)
+                            .animation(Animation.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: imagePulse)
+                            .onAppear { imagePulse = true }
+                    }
+                )
+                .shadow(color: Color.purple.opacity(0.18), radius: 24, x: 0, y: 12)
+                .padding(.bottom, 8)
+                .glassEffect()
+                .scaleEffect(showContent ? 1 : 0.8)
+                .opacity(showContent ? 1 : 0)
+                .animation(.spring(response: 0.7, dampingFraction: 0.7), value: showContent)
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.7)) {
+                showContent = true
+            }
         }
     }
 }

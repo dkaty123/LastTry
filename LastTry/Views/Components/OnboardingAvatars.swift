@@ -1003,9 +1003,14 @@ struct AvatarFactory {
 
 // MARK: - Avatar Selection View
 struct AvatarSelectionView: View {
-    @Binding var selectedAvatar: AvatarType
+    @Binding var selectedAvatar: String
     @Environment(\.dismiss) private var dismiss
     @StateObject private var motion = SplashMotionManager()
+    let catAvatars = [
+        (name: "Astro Cat 1", image: "clearIcon"),
+        (name: "Astro Cat 2", image: "clearIcon2"),
+        (name: "Astro Cat 3", image: "clearIcon3")
+    ]
     var body: some View {
         NavigationStack {
             ZStack {
@@ -1016,12 +1021,29 @@ struct AvatarSelectionView: View {
                     VStack(spacing: 24) {
                         headerView
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20) {
-                            ForEach(AvatarType.allCases, id: \.self) { avatarType in
-                                AvatarCard(
-                                    type: avatarType,
-                                    isSelected: selectedAvatar == avatarType,
-                                    action: { selectedAvatar = avatarType }
-                                )
+                            ForEach(catAvatars, id: \.image) { avatar in
+                                Button(action: { selectedAvatar = avatar.image }) {
+                                    VStack(spacing: 16) {
+                                        Image(avatar.image)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 80, height: 80)
+                                            .clipShape(Circle())
+                                            .overlay(
+                                                Circle().stroke(selectedAvatar == avatar.image ? Theme.accentColor : Color.clear, lineWidth: 3)
+                                            )
+                                            .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                                        Text(avatar.name)
+                                            .font(Font.custom("SF Pro Rounded", size: 18).weight(.bold))
+                                            .foregroundColor(.white)
+                                    }
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.white.opacity(0.1))
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                         .padding(.horizontal)
@@ -1030,7 +1052,7 @@ struct AvatarSelectionView: View {
                     .padding()
                 }
             }
-            .navigationTitle("Choose Your Companion")
+            .navigationTitle("Choose Your Space Explorer")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -1044,11 +1066,11 @@ struct AvatarSelectionView: View {
     }
     private var headerView: some View {
         VStack(spacing: 16) {
-            Text("Choose Your Cosmic Companion")
+            Text("Choose Your Space Explorer")
                 .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
-            Text("Select a friendly avatar to guide you through your scholarship journey")
+            Text("Select a cat astronaut to guide you through your scholarship journey")
                 .font(.body)
                 .foregroundColor(.white.opacity(0.8))
                 .multilineTextAlignment(.center)
@@ -1056,7 +1078,7 @@ struct AvatarSelectionView: View {
     }
     private var confirmButton: some View {
         Button(action: { dismiss() }) {
-            Text("Continue with \(selectedAvatar.rawValue)")
+            Text("Continue with \(selectedAvatar)")
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)

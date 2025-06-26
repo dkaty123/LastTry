@@ -8,19 +8,7 @@ struct MainNavigationView: View {
     @State private var showSplash = true
     
     init() {
-        // Configure tab bar appearance
-        let appearance = UITabBarAppearance()
-        appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = UIColor(Theme.backgroundColor)
-        
-        // Set the tab bar item colors
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor.white.withAlphaComponent(0.6)
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.white.withAlphaComponent(0.6)]
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor.white
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.white]
-        
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
+        // Remove tab bar appearance configuration since we're using custom nav bar
     }
     
     var body: some View {
@@ -41,54 +29,57 @@ struct MainNavigationView: View {
     
     private var mainAppView: some View {
         NavigationStack {
-            ZStack {
+            ZStack(alignment: .bottom) {
                 Theme.primaryGradient
                     .ignoresSafeArea()
                 
-                TabView(selection: $selectedTab) {
-                    HomeView()
-                        .tabItem {
-                            Label("Home", systemImage: "house.fill")
-                        }
-                        .tag(0)
-                    
-                    ScholarshipMatchView()
-                        .tabItem {
-                            Label("Cosmic Match", systemImage: "sparkles")
-                        }
-                        .tag(1)
-                    
-                    SavedScholarshipsView()
-                        .tabItem {
-                            Label("Saved", systemImage: "bookmark.fill")
-                        }
-                        .tag(2)
-                    
-                    AvatarGridPageView()
-                        .tabItem {
-                            Label("Avatars", systemImage: "person.3.fill")
-                        }
-                        .tag(3)
-                    
-                    MoreTabView()
-                        .tabItem {
-                            Label("More", systemImage: "ellipsis.circle")
-                        }
-                        .tag(4)
+                // Main content based on selected tab
+                Group {
+                    switch selectedTab {
+                    case 0: HomeView()
+                    case 1: ScholarshipMatchView()
+                    case 2: SavedScholarshipsView()
+                    case 3: AvatarGridPageView()
+                    case 4: MoreTabView()
+                    default: HomeView()
+                    }
                 }
-                .tint(.white)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                // Custom purple bottom navigation bar
+                HStack(spacing: 0) {
+                    navBarButton(image: "house", label: "Home", index: 0)
+                    navBarButton(image: "star", label: "Match", index: 1)
+                    navBarButton(image: "bookmark", label: "Saved", index: 2)
+                    navBarButton(image: "someTest", label: "Avatars", index: 3)
+                    navBarButton(image: "paw", label: "More", index: 4)
+                }
+                .padding(.top, 15)
+                .padding(.bottom, 0)
+                .padding(.horizontal, 16)
+                .background(
+                    Theme.backgroundColor
+                        .ignoresSafeArea()
+                )
+                .padding(.bottom, 0)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     HStack {
                         NavigationLink(destination: ProfileView()) {
-                            Image(systemName: "person.circle.fill")
+                            Image("account")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
                                 .foregroundColor(.white)
                         }
                         
                         Button(action: { showSearch = true }) {
-                            Image(systemName: "magnifyingglass")
+                            Image("search")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 22, height: 22)
                                 .foregroundColor(.white)
                         }
                     }
@@ -96,7 +87,10 @@ struct MainNavigationView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showNotifications = true }) {
-                        Image(systemName: "bell.fill")
+                        Image("bell")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 22, height: 22)
                             .foregroundColor(.white)
                     }
                 }
@@ -108,6 +102,40 @@ struct MainNavigationView: View {
                 NotificationsView()
             }
         }
+    }
+    
+    @ViewBuilder
+    private func navBarButton(image: String, label: String, index: Int) -> some View {
+        Button(action: { 
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedTab = index
+            }
+        }) {
+            VStack(spacing: 4) {
+                // Check if it's a custom asset
+                let customAssets = ["house", "star", "bookmark", "someTest", "paw"]
+                if customAssets.contains(image) {
+                    Image(image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 40, alignment: .bottom)
+                        .frame(maxWidth: 40, alignment: .bottom)
+                        .shadow(color: Color.black.opacity(0.12), radius: 2, x: 0, y: 1)
+                } else {
+                    Image(systemName: image)
+                        .font(.system(size: 28, weight: .medium))
+                        .frame(height: 36, alignment: .bottom)
+                        .frame(maxWidth: 36, alignment: .bottom)
+                        .foregroundColor(selectedTab == index ? .white : .white.opacity(0.7))
+                }
+                Text(label)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(selectedTab == index ? .white : .white.opacity(0.7))
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .scaleEffect(selectedTab == index ? 1.1 : 1.0)
+        .animation(.easeInOut(duration: 0.2), value: selectedTab)
     }
 }
 
