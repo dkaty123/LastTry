@@ -334,6 +334,14 @@ struct ProfileSetupView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.white.opacity(0.08))
                         .cornerRadius(12)
+                        .onChange(of: gpa) { newGpa in
+                            // Auto-save and navigate when GPA is selected
+                            if !newGpa.isEmpty {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    saveProfile()
+                                }
+                            }
+                        }
                 }
             }
             .padding()
@@ -348,19 +356,6 @@ struct ProfileSetupView: View {
                 .padding(.horizontal, 20)
             }
             .padding(.bottom, 100)
-            // Show nextButton image only on the third page
-            if currentStep == 2 {
-                Button(action: handleNext) {
-                    Image("nextButton")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 72)
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 20)
-                        .opacity(0.98)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
         }
     }
     

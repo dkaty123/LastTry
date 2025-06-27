@@ -2,6 +2,7 @@ import SwiftUI
 import CoreMotion
 
 struct ScholarSwiperSplashView: View {
+    @AppStorage("userAvatar") private var selectedAvatar: String = "clearIcon"
     var onLaunch: (() -> Void)? = nil
     @State private var capOffset: CGFloat = 0
     @State private var capBounce = false
@@ -233,59 +234,53 @@ struct ScholarSwiperSplashView: View {
     }
 
     func updateAnimals(in geoSize: CGSize) {
-        let speed: CGFloat = 0.45 // much slower
-        let bobSpeed: CGFloat = 0.045
-        let bobRange: CGFloat = 6
-        let angleLerp: Double = 0.12 // smooth turning
-        let maxTilt: Double = 0.35 // ~20 degrees in radians
-        let minTargetDist: CGFloat = 60 // pets must always move at least this far
+        let speed: CGFloat = 0.28 // even slower for astronaut effect
+        let bobSpeed: CGFloat = 0.035
+        let bobRange: CGFloat = 7
+        let angleLerp: Double = 0.10 // even smoother turning
+        let maxTilt: Double = 0.25 // less tilt
+        let minTargetDist: CGFloat = 60
         for i in animals.indices {
             var animal = animals[i]
-            // Move toward target
-            let dx = animal.target.x - animal.position.x
-            let dy = animal.target.y - animal.position.y
-            let dist = sqrt(dx*dx + dy*dy)
-            if dist < minTargetDist {
-                // Pick a new target that's far enough away
-                var newTarget: CGPoint
-                repeat {
-                    newTarget = randomPoint(in: geoSize, size: animal.size)
-                } while sqrt(pow(newTarget.x - animal.position.x, 2) + pow(newTarget.y - animal.position.y, 2)) < minTargetDist
-                animal.target = newTarget;
+            // Only update the selected animal (by matching type to selectedAvatar)
+            let isSelected: Bool = {
+                switch animal.type {
+                case .cat: return selectedAvatar.contains("cat") || selectedAvatar.contains("clearIcon")
+                case .dog: return selectedAvatar.contains("dog")
+                case .bunny: return selectedAvatar.contains("bunny")
+                }
+            }()
+            if isSelected {
+                // Move toward target (astronaut-like)
+                let dx = animal.target.x - animal.position.x
+                let dy = animal.target.y - animal.position.y
+                let dist = sqrt(dx*dx + dy*dy)
+                if dist < minTargetDist {
+                    // Pick a new target in the top half of the screen
+                    var newTarget: CGPoint
+                    repeat {
+                        newTarget = randomPoint(in: geoSize, size: animal.size)
+                    } while sqrt(pow(newTarget.x - animal.position.x, 2) + pow(newTarget.y - animal.position.y, 2)) < minTargetDist
+                    animal.target = newTarget;
+                } else {
+                    let step = min(speed, dist)
+                    let targetAngle = atan2(dy, dx)
+                    animal.position.x += cos(targetAngle) * step
+                    animal.position.y += sin(targetAngle) * step
+                    // Clamp angle to gentle tilt
+                    let clampedAngle = max(-maxTilt, min(maxTilt, targetAngle))
+                    let delta = clampedAngle - animal.angle
+                    animal.angle += delta * angleLerp
+                }
+                // Animate bobbing
+                animal.bob = sin(CGFloat(Date().timeIntervalSinceReferenceDate) * bobSpeed * 60 + CGFloat(i) * 2) * bobRange
             } else {
-                let step = min(speed, dist)
-                let targetAngle = atan2(dy, dx)
-                animal.position.x += cos(targetAngle) * step
-                animal.position.y += sin(targetAngle) * step
-                // Clamp angle to gentle tilt
-                let clampedAngle = max(-maxTilt, min(maxTilt, targetAngle))
-                let delta = clampedAngle - animal.angle
-                animal.angle += delta * angleLerp
+                // Fade out or keep in place
+                // Optionally: animal.bob = 0
             }
-            // Animate bobbing
-            animal.bob = sin(CGFloat(Date().timeIntervalSinceReferenceDate) * bobSpeed * 60 + CGFloat(i) * 2) * bobRange
             animals[i] = animal
         }
-        // Collision/bounce
-        for i in 0..<animals.count {
-            for j in (i+1)..<animals.count {
-                let a = animals[i]
-                let b = animals[j]
-                let minDist = (a.size.width + b.size.width) * 0.45
-                let dx = b.position.x - a.position.x
-                let dy = b.position.y - a.position.y
-                let dist = sqrt(dx*dx + dy*dy)
-                if dist < minDist {
-                    // Gentle bounce: small push per frame, no abrupt target change
-                    let push = (minDist - dist) * 0.08
-                    let angle = atan2(dy, dx)
-                    animals[i].position.x -= cos(angle) * push
-                    animals[i].position.y -= sin(angle) * push
-                    animals[j].position.x += cos(angle) * push
-                    animals[j].position.y += sin(angle) * push
-                }
-            }
-        }
+        // Optionally: skip collision for non-selected
     }
 
     private func startAvatarAnimations() {

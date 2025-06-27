@@ -1,4 +1,9 @@
+import Foundation
+// Import the SwipeDirection enum
 import SwiftUI
+// If the above import does not work, try:
+// import LastTry // if using modules
+// Or just ensure the file is in the same target
 
 struct ScholarshipCardView: View {
     let scholarship: Scholarship
@@ -8,6 +13,8 @@ struct ScholarshipCardView: View {
     @State private var isHovered = false
     @State private var showConfetti = false
     @State private var isSaved = false
+    
+    let swipeDirection: SwipeDirection?
     
     var body: some View {
         VStack(spacing: 20) {
@@ -50,13 +57,20 @@ struct ScholarshipCardView: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovered)
             
             // Description with fade-in effect
-            Text(scholarship.description)
-                .font(.body)
-                .foregroundColor(.white.opacity(0.8))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .opacity(isAnimating ? 1 : 0)
-                .offset(y: isAnimating ? 0 : 20)
+            HStack(alignment: .top, spacing: 12) {
+                Image(categoryCatImageName(for: scholarship.category))
+                    .resizable()
+                    .frame(width: 44, height: 44)
+                    .clipShape(Circle())
+                    .shadow(radius: 4)
+                Text(scholarship.description)
+                    .font(.body)
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.leading)
+            }
+            .padding(.horizontal)
+            .opacity(isAnimating ? 1 : 0)
+            .offset(y: isAnimating ? 0 : 20)
             
             if isExpanded {
                 // Requirements with staggered animation
@@ -202,6 +216,21 @@ struct ScholarshipCardView: View {
             isHovered = hovering
         }
         .overlay(
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(
+                    swipeDirection == .right ? Theme.successColor :
+                    swipeDirection == .left ? Theme.errorColor : Color.clear,
+                    lineWidth: (swipeDirection == .right || swipeDirection == .left) ? 8 : 0
+                )
+                .shadow(
+                    color: (swipeDirection == .right ? Theme.successColor :
+                            swipeDirection == .left ? Theme.errorColor : Color.clear).opacity(0.7),
+                    radius: (swipeDirection == .right || swipeDirection == .left) ? 24 : 0
+                )
+                .opacity((swipeDirection == .right || swipeDirection == .left) ? 1 : 0)
+                .animation(.easeOut(duration: 0.2), value: swipeDirection)
+        )
+        .overlay(
             ConfettiView()
                 .opacity(showConfetti ? 1 : 0)
         )
@@ -228,6 +257,17 @@ struct ScholarshipCardView: View {
     }
     private func addToCalendar() {
         // TODO: Implement calendar export for the deadline
+    }
+    
+    // Helper function to map category to cat image asset name
+    private func categoryCatImageName(for category: Scholarship.ScholarshipCategory) -> String {
+        switch category {
+        case .stem: return "stem"
+        case .arts: return "art"
+        case .humanities: return "human"
+        case .business: return "business"
+        case .general: return "general"
+        }
     }
 }
 
@@ -267,6 +307,6 @@ struct ConfettiView: View {
 }
 
 #Preview {
-    ScholarshipCardView(scholarship: Scholarship.sampleScholarships[0])
+    ScholarshipCardView(scholarship: Scholarship.sampleScholarships[0], swipeDirection: nil as SwipeDirection?)
         .preferredColorScheme(.dark)
 } 

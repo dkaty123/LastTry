@@ -146,7 +146,7 @@ struct SmartSearchView: View {
             } else {
                 LazyVStack(spacing: 16) {
                     ForEach(viewModel.searchResults) { scholarship in
-                        ScholarshipCardView(scholarship: scholarship)
+                        ScholarshipCardView(scholarship: scholarship, swipeDirection: nil)
                             .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
                 }

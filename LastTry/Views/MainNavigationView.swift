@@ -25,6 +25,9 @@ struct MainNavigationView: View {
                 mainAppView
             }
         }
+        .onAppear {
+            viewModel.updateSoundtrackState()
+        }
     }
     
     private var mainAppView: some View {

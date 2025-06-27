@@ -89,6 +89,16 @@ struct ProfileView: View {
                                 .cornerRadius(15)
                         }
                         .padding(.horizontal)
+                        // Soundtrack Toggle
+                        Toggle(isOn: $viewModel.soundtrackEnabled) {
+                            Text("Soundtrack")
+                                .font(.headline)
+                                .foregroundColor(Color(white: 1.0))
+                        }
+                        .padding(.horizontal)
+                        .onChange(of: viewModel.soundtrackEnabled) { _ in
+                            viewModel.updateSoundtrackState()
+                        }
                     }
                 }
             }

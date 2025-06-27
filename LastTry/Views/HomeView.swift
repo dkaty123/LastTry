@@ -1,4 +1,7 @@
 import SwiftUI
+import AVFoundation
+import Foundation
+import Darwin
 
 struct HomeView: View {
     @EnvironmentObject private var viewModel: AppViewModel
@@ -34,6 +37,32 @@ struct HomeView: View {
         size: 80
     )
     @State private var floatingCatOscillation: Double = 0
+    @State private var catSpeech: String? = nil
+    @State private var showCatSpeech: Bool = false
+    @State private var catAudioPlayer: AVAudioPlayer? = nil
+    let catTips: [String] = [
+        "Tip: Swipe right to save a scholarship!",
+        "Fun Fact: Cats have been to space!",
+        "Keep going, you're doing great!",
+        "Need help? Tap the search icon.",
+        "Remember to check deadlines!",
+        "Your cat believes in you!",
+        "Did you know? You can customize your cat avatar!",
+        "Every swipe is a step closer to your dreams!",
+        "You're a star in this scholarship galaxy!",
+        "Stay pawsitive and keep exploring!",
+        "Big opportunities start with small steps.",
+        "Your future is as bright as the cosmos!",
+        "Believe in yourself—your cat does!",
+        "Scholarships are out there waiting for you!",
+        "You've got this! One swipe at a time.",
+        "Curiosity leads to discovery. Keep swiping!",
+        "The universe rewards persistence.",
+        "You're not alone—your cat is cheering for you!",
+        "Let's make today a productive day!",
+        "Meow-tivation: You can do it!"
+    ]
+    @State private var currentSwipeDirection: SwipeDirection? = nil
     
     init() {
         // Set the navigation bar appearance
@@ -65,52 +94,91 @@ struct HomeView: View {
                     default: return "clearIcon"
                     }
                 }()
-                Image(imageName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: floatingCat.size, height: floatingCat.size)
-                    .rotationEffect(.radians(floatingCat.angle + sin(floatingCatOscillation) * 0.18))
-                    .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22))
-                    .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
-                    .animation(.easeInOut(duration: 0.7), value: floatingCat.position)
-                    .onAppear {
-                        Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
-                            let screen = UIScreen.main.bounds
-                            let upperLimit = screen.height * 0.22
-                            var cat = floatingCat
-                            // Move
-                            cat.position.x += cat.velocity.dx
-                            cat.position.y += cat.velocity.dy
-                            // Bounce off left/right edges
-                            if cat.position.x < cat.size/2 || cat.position.x > screen.width - cat.size/2 {
-                                cat.velocity.dx *= -1
-                                cat.position.x = min(max(cat.size/2, cat.position.x), screen.width - cat.size/2)
-                            }
-                            // Bounce off top/upper half only
-                            if cat.position.y < cat.size/2 {
-                                cat.velocity.dy *= -1
-                                cat.position.y = cat.size/2
-                            } else if cat.position.y > upperLimit - cat.size/2 {
-                                cat.velocity.dy *= -1
-                                cat.position.y = upperLimit - cat.size/2
-                            }
-                            // Gentle angle rotation, but keep mostly upright
-                            cat.angle += cat.angleSpeed
-                            cat.angle = min(max(cat.angle, -0.2), 0.2)
-                            // Occasional random direction change
-                            if Int.random(in: 0...400) == 0 {
-                                cat.velocity.dx += Double.random(in: -0.2...0.2)
-                                cat.velocity.dy += Double.random(in: -0.2...0.2)
-                            }
-                            floatingCat = cat
-                            floatingCatOscillation += 0.025
+                ZStack {
+                    Image(imageName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: floatingCat.size, height: floatingCat.size)
+                        .rotationEffect(.radians(floatingCat.angle + sin(floatingCatOscillation) * 0.18))
+                        .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22))
+                        .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                        .animation(.easeInOut(duration: 0.7), value: floatingCat.position)
+                    if let speech = catSpeech, showCatSpeech {
+                        VStack(spacing: 0) {
+                            Text(speech)
+                                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .fill(Color.white.opacity(0.92))
+                                        .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 2)
+                                )
+                                .overlay(
+                                    CatSpeechBubbleTail()
+                                        .fill(Color.white.opacity(0.92))
+                                        .frame(width: 18, height: 10)
+                                        .rotationEffect(.degrees(180))
+                                        .offset(y: 8), alignment: .bottom
+                                )
+                                .opacity(showCatSpeech ? 1 : 0)
+                                .transition(.opacity)
+                        }
+                        .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22) - floatingCat.size * 0.7)
+                        .zIndex(2)
+                    }
+                }
+                .onAppear {
+                    Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
+                        let screen = UIScreen.main.bounds
+                        let upperLimit = screen.height * 0.22
+                        var cat = floatingCat
+                        // Move
+                        cat.position.x += cat.velocity.dx
+                        cat.position.y += cat.velocity.dy
+                        // Bounce off left/right edges
+                        if cat.position.x < cat.size/2 || cat.position.x > screen.width - cat.size/2 {
+                            cat.velocity.dx *= -1
+                            cat.position.x = min(max(cat.size/2, cat.position.x), screen.width - cat.size/2)
+                        }
+                        // Bounce off top/upper half only
+                        if cat.position.y < cat.size/2 {
+                            cat.velocity.dy *= -1
+                            cat.position.y = cat.size/2
+                        } else if cat.position.y > upperLimit - cat.size/2 {
+                            cat.velocity.dy *= -1
+                            cat.position.y = upperLimit - cat.size/2
+                        }
+                        // Gentle angle rotation, but keep mostly upright
+                        cat.angle += cat.angleSpeed
+                        cat.angle = min(max(cat.angle, -0.2), 0.2)
+                        // Always keep a slow, constant speed
+                        let speed: Double = 0.28
+                        let currentSpeed = sqrt(cat.velocity.dx * cat.velocity.dx + cat.velocity.dy * cat.velocity.dy)
+                        if abs(currentSpeed - speed) > 0.01 {
+                            // Normalize and set to fixed speed
+                            let angle = atan2(cat.velocity.dy, cat.velocity.dx)
+                            cat.velocity.dx = cos(Double(angle)) * speed
+                            cat.velocity.dy = sin(Double(angle)) * speed
+                        }
+                        floatingCat = cat
+                        floatingCatOscillation += 0.025
+                    }
+                    Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
+                        catSpeech = catTips.randomElement()
+                        withAnimation(.easeInOut(duration: 0.5)) { showCatSpeech = true }
+                        playCatSoundAndHaptic()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
+                            withAnimation(.easeInOut(duration: 0.5)) { showCatSpeech = false }
                         }
                     }
+                }
             }
             .zIndex(1)
             VStack {
                 if currentIndex < viewModel.scholarships.count {
-                    ScholarshipCardView(scholarship: viewModel.scholarships[currentIndex])
+                    ScholarshipCardView(scholarship: viewModel.scholarships[currentIndex], swipeDirection: currentSwipeDirection)
                         .frame(height: 420)
                         .offset(x: offset.width, y: 0)
                         .rotationEffect(.degrees(Double(offset.width / 20)))
@@ -119,11 +187,19 @@ struct HomeView: View {
                             DragGesture()
                                 .onChanged { gesture in
                                     offset = gesture.translation
+                                    if gesture.translation.width > 20 {
+                                        currentSwipeDirection = .right
+                                    } else if gesture.translation.width < -20 {
+                                        currentSwipeDirection = .left
+                                    } else {
+                                        currentSwipeDirection = nil
+                                    }
                                 }
                                 .onEnded { gesture in
                                     withAnimation(.spring()) {
                                         handleSwipe(gesture)
                                     }
+                                    currentSwipeDirection = nil // Reset after swipe
                                 }
                         )
                 } else {
@@ -209,7 +285,7 @@ struct HomeView: View {
             }
         } else {
             withAnimation(.spring()) {
-            offset = .zero
+                offset = .zero
             }
         }
     }
@@ -238,6 +314,7 @@ struct HomeView: View {
         currentIndex += 1
         offset = .zero
             isAnimating = true
+            lastSwipe = nil // Reset after card leaves
         }
     }
     
@@ -351,6 +428,21 @@ struct HomeView: View {
         let dy = a.y - b.y
         return sqrt(dx*dx + dy*dy)
     }
+    
+    private func playCatSoundAndHaptic() {
+        let sounds = ["meow1", "purr1", "jingle1"]
+        if let soundName = sounds.randomElement(), let url = Bundle.main.url(forResource: soundName, withExtension: "mp3") {
+            do {
+                catAudioPlayer = try AVAudioPlayer(contentsOf: url)
+                catAudioPlayer?.volume = 0.8
+                catAudioPlayer?.play()
+            } catch {
+                print("Failed to play cat sound: \(error)")
+            }
+        }
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+    }
 }
 
 // Add struct for floating astronaut at the bottom
@@ -361,6 +453,23 @@ struct HomeFloatingAstronaut {
     var angle: Double
     var angleSpeed: Double
     var size: CGFloat
+}
+
+// Add a simple triangle shape for the speech bubble tail
+struct CatSpeechBubbleTail: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+// Add enum for swipe result at the top (outside HomeView)
+enum SwipeResult {
+    case right, left
 }
 
 #Preview {

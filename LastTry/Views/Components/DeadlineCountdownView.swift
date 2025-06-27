@@ -34,7 +34,7 @@ struct DeadlineCountdownView: View {
             let diff = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: now, to: deadline)
             if let day = diff.day, let hour = diff.hour, let minute = diff.minute, let second = diff.second {
                 if now > deadline {
-                    timeLeft = "Deadline passed"
+                    timeLeft = ""
                     timer?.invalidate()
                 } else if day > 0 {
                     timeLeft = "\(day) Day\(day == 1 ? "" : "s") Left"

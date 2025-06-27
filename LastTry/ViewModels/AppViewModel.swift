@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import AVFoundation
 
 public class AppViewModel: ObservableObject {
     @Published public var scholarships: [Scholarship] = []
@@ -7,6 +8,8 @@ public class AppViewModel: ObservableObject {
     @Published public var userProfile: UserProfile?
     @Published public var hasCompletedOnboarding: Bool = false
     @Published public var matchedScholarships: [Scholarship] = []
+    @AppStorage("soundtrackEnabled") public var soundtrackEnabled: Bool = true
+    private var soundtrackPlayer: AVAudioPlayer?
     
     private let savedScholarshipsKey = "savedScholarships"
     private let onboardingKey = "hasCompletedOnboarding"
@@ -160,5 +163,29 @@ public class AppViewModel: ObservableObject {
     func unlockStreakAchievementsIfNeeded(achievementViewModel: AchievementViewModel) {
         guard let streak = userProfile?.streakCount else { return }
         achievementViewModel.checkAndUnlockStreakAchievements(streakCount: streak)
+    }
+    
+    public func playSoundtrack() {
+        guard soundtrackEnabled else { stopSoundtrack(); return }
+        if soundtrackPlayer?.isPlaying == true { return }
+        if let url = Bundle.main.url(forResource: "music", withExtension: "mp3") {
+            do {
+                soundtrackPlayer = try AVAudioPlayer(contentsOf: url)
+                soundtrackPlayer?.numberOfLoops = -1
+                soundtrackPlayer?.volume = 0.5
+                soundtrackPlayer?.play()
+            } catch {
+                print("Failed to play soundtrack: \(error)")
+            }
+        }
+    }
+    
+    public func stopSoundtrack() {
+        soundtrackPlayer?.stop()
+        soundtrackPlayer = nil
+    }
+    
+    public func updateSoundtrackState() {
+        if soundtrackEnabled { playSoundtrack() } else { stopSoundtrack() }
     }
 } 

@@ -15,7 +15,7 @@ public enum Theme {
     public static let textColor = Color.white
     public static let amberColor = Color(hex: "FFBF00")
     
-    public static let cardBackground = Color(hex: "2D1B69").opacity(0.8)
+    public static let cardBackground = Color(hex: "2D1B69")
     public static let cardBorder = Color(hex: "9D4EDD").opacity(0.3)
     
     public static let successColor = Color(hex: "4CAF50")

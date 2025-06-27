@@ -35,6 +35,9 @@ struct MoreTabView: View {
                     NavigationLink(destination: AIEssayAssistantView()) {
                         MoreCardView(title: "AI Essay Assistant", icon: "brain.head.profile", color: .purple)
                     }
+                    NavigationLink(destination: InterviewSimulatorView()) {
+                        MoreCardView(title: "AI Interview Simulator", icon: "person.bubble.fill", color: .blue)
+                    }
                     NavigationLink(destination: ScholarshipAlertRadarView()) {
                         MoreCardView(title: "Alert Radar", icon: "radar", color: .red)
                     }

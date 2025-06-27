@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "a-cartoon-cat-is-wearing-a-graduation-cap-and-smiling-png-ezgif.com-webp-to-png-converter.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
