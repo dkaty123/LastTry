@@ -108,7 +108,9 @@ struct ScholarshipCardView: View {
                 
                 // Deadline with icon animation
                 HStack {
-                    Image(systemName: "calendar")
+                    Image("clock")
+                        .resizable()
+                        .frame(width: 22, height: 22)
                         .foregroundColor(Theme.accentColor)
                         .rotationEffect(.degrees(isAnimating ? 360 : 0))
                         .animation(.spring(response: 0.5, dampingFraction: 0.6), value: isAnimating)
@@ -116,27 +118,35 @@ struct ScholarshipCardView: View {
                         .foregroundColor(.white)
                 }
                 .padding(.vertical, 5)
-                // Countdown widget
-                DeadlineCountdownView(deadline: scholarship.deadline, scholarshipName: scholarship.name, amount: Int(scholarship.amount))
                 // Reminder and Calendar buttons
                 HStack(spacing: 16) {
                     Button(action: { scheduleDeadlineReminder() }) {
-                        Label("Remind Me", systemImage: "bell.badge.fill")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.purple.opacity(0.25))
-                            .cornerRadius(10)
+                        HStack(spacing: 8) {
+                            Image("remind")
+                                .resizable()
+                                .frame(width: 18, height: 18)
+                            Text("Remind Me")
+                                .font(.subheadline.bold())
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.purple.opacity(0.25))
+                        .cornerRadius(10)
                     }
                     Button(action: { addToCalendar() }) {
-                        Label("Add to Calendar", systemImage: "calendar.badge.plus")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.blue.opacity(0.25))
-                            .cornerRadius(10)
+                        HStack(spacing: 8) {
+                            Image("calender")
+                                .resizable()
+                                .frame(width: 18, height: 18)
+                            Text("Add to Calendar")
+                                .font(.subheadline.bold())
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.blue.opacity(0.25))
+                        .cornerRadius(10)
                     }
                 }
                 

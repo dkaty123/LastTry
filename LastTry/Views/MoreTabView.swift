@@ -23,6 +23,15 @@ struct MoreTabView: View {
                 .padding(.bottom, 16)
                 
                 VStack(spacing: 10) {
+                    NavigationLink(destination: ScholarSwipeWorldView()) {
+                        MoreCardView(title: "ScholarSwipe World", icon: "globe.americas.fill", color: .purple)
+                    }
+                    NavigationLink(destination: LiveActivityFeedView()) {
+                        MoreCardView(title: "Live Activity Feed", icon: "bolt.heart.fill", color: .pink)
+                    }
+                    NavigationLink(destination: AchievementConstellationsView()) {
+                        MoreCardView(title: "Achievement Constellations", icon: "star.fill", color: .yellow)
+                    }
                     NavigationLink(destination: FinancialPlanningView()) {
                         MoreCardView(title: "Financial Planning", icon: "dollarsign.circle.fill", color: .green)
                     }
