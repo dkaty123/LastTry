@@ -64,17 +64,6 @@ struct HomeView: View {
     ]
     @State private var currentSwipeDirection: SwipeDirection? = nil
     
-    // Floating background avatars (back1...back7)
-    struct FloatingBackgroundAvatar {
-        var imageName: String
-        var position: CGPoint
-        var velocity: CGVector
-        var angle: Double
-        var size: CGFloat
-    }
-    @State private var floatingBackgroundAvatars: [FloatingBackgroundAvatar] = []
-    let backgroundAvatarNames = ["back1", "back2", "back3", "back4", "back5", "back6", "back7"]
-    
     init() {
         // Set the navigation bar appearance
         let appearance = UINavigationBarAppearance()
@@ -95,25 +84,6 @@ struct HomeView: View {
             ScholarSplashDriftingStarFieldView()
                 .id("starfield")
             
-            // Floating background avatars (back1...back7)
-            GeometryReader { geo in
-                let screenHeight = geo.size.height
-                ForEach(0..<floatingBackgroundAvatars.count, id: \.self) { i in
-                    let bg = floatingBackgroundAvatars[i]
-                    Image(bg.imageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: bg.size, height: bg.size)
-                        .rotationEffect(.radians(bg.angle))
-                        .position(x: bg.position.x, y: min(bg.position.y, screenHeight * 0.95))
-                        .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
-                        .opacity(1.0)
-                        .animation(.easeInOut(duration: 0.7), value: bg.position)
-                }
-            }
-            .ignoresSafeArea()
-            .zIndex(0) // Behind everything else
-            
             // Floating astronaut cat (user's pick)
             GeometryReader { geo in
                 let screenHeight = geo.size.height
@@ -126,12 +96,20 @@ struct HomeView: View {
                     }
                 }()
                 ZStack {
+                    // UFO base
+                    Image("ufo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: floatingCat.size * 2.0, height: floatingCat.size * 1.4)
+                        .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22))
+                        .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                        .animation(.easeInOut(duration: 0.7), value: floatingCat.position)
+                    // Cat avatar inside UFO
                     Image(imageName)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: floatingCat.size, height: floatingCat.size)
-                        .rotationEffect(.radians(floatingCat.angle + sin(floatingCatOscillation) * 0.18))
-                        .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22))
+                        .frame(width: floatingCat.size * 0.68, height: floatingCat.size * 0.68)
+                        .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22) - floatingCat.size * 0.36)
                         .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
                         .animation(.easeInOut(duration: 0.7), value: floatingCat.position)
                     if let speech = catSpeech, showCatSpeech {
@@ -272,96 +250,6 @@ struct HomeView: View {
             }
             // Start avatar floating animation
             startAvatarFloating()
-            
-            // Initialize floating background avatars
-            let screen = UIScreen.main.bounds
-            if floatingBackgroundAvatars.isEmpty {
-                floatingBackgroundAvatars = backgroundAvatarNames.map { name in
-                    // Pick a random direction and constant speed
-                    let speed: Double = 0.18 // gentle, constant speed
-                    let direction = Double.random(in: 0...(2 * .pi))
-                    let dx = Foundation.cos(direction) * speed
-                    let dy = Foundation.sin(direction) * speed
-                    return FloatingBackgroundAvatar(
-                        imageName: name,
-                        position: CGPoint(
-                            x: CGFloat.random(in: 0...screen.width),
-                            y: CGFloat.random(in: 0...screen.height)
-                        ),
-                        velocity: CGVector(dx: dx, dy: dy),
-                        angle: 0, // no spin
-                        size: 65 // slightly smaller
-                    )
-                }
-            }
-            // Start timer for floating background avatars
-            Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
-                let screen = UIScreen.main.bounds
-                // Scholarship card frame (centered)
-                let cardWidth = screen.width * 0.88
-                let cardHeight: CGFloat = 420
-                let cardX = (screen.width - cardWidth) / 2
-                let cardY = (screen.height - cardHeight) / 2
-                let cardRect = CGRect(x: cardX, y: cardY, width: cardWidth, height: cardHeight)
-                let strictCardRect = cardRect.insetBy(dx: 2, dy: 2)
-                let minDistance: CGFloat = 60
-                var avatars = floatingBackgroundAvatars
-                // Repulsion: for each pair, if too close, push apart
-                for i in 0..<avatars.count {
-                    for j in (i+1)..<avatars.count {
-                        let dx = avatars[j].position.x - avatars[i].position.x
-                        let dy = avatars[j].position.y - avatars[i].position.y
-                        let dist = sqrt(dx*dx + dy*dy)
-                        if dist < minDistance && dist > 0.1 {
-                            let push = (minDistance - dist) / minDistance * 0.18 // repulsion strength
-                            let angle = atan2(dy, dx)
-                            avatars[i].velocity.dx -= cos(angle) * push
-                            avatars[i].velocity.dy -= sin(angle) * push
-                            avatars[j].velocity.dx += cos(angle) * push
-                            avatars[j].velocity.dy += sin(angle) * push
-                        }
-                    }
-                }
-                // Update positions and handle speed/card logic
-                floatingBackgroundAvatars = avatars.map { bg in
-                    var newBg = bg
-                    // Calculate bounding box for the object
-                    let objRect = CGRect(
-                        x: newBg.position.x - newBg.size/2,
-                        y: newBg.position.y - newBg.size/2,
-                        width: newBg.size,
-                        height: newBg.size
-                    )
-                    // Check if fully under the card (strict)
-                    let isFullyUnderCard = strictCardRect.contains(objRect)
-                    // Set speed
-                    let normalSpeed: Double = 0.18
-                    let fastSpeed: Double = normalSpeed * 10
-                    let speed = isFullyUnderCard ? fastSpeed : normalSpeed
-                    // Move at current speed
-                    let angle = atan2(newBg.velocity.dy, newBg.velocity.dx)
-                    newBg.velocity.dx = Foundation.cos(angle) * speed
-                    newBg.velocity.dy = Foundation.sin(angle) * speed
-                    newBg.position.x += newBg.velocity.dx
-                    newBg.position.y += newBg.velocity.dy
-                    // Bounce off screen edges
-                    if newBg.position.x < newBg.size/2 {
-                        newBg.position.x = newBg.size/2
-                        newBg.velocity.dx = abs(newBg.velocity.dx)
-                    } else if newBg.position.x > screen.width - newBg.size/2 {
-                        newBg.position.x = screen.width - newBg.size/2
-                        newBg.velocity.dx = -abs(newBg.velocity.dx)
-                    }
-                    if newBg.position.y < newBg.size/2 {
-                        newBg.position.y = newBg.size/2
-                        newBg.velocity.dy = abs(newBg.velocity.dy)
-                    } else if newBg.position.y > screen.height - newBg.size/2 {
-                        newBg.position.y = screen.height - newBg.size/2
-                        newBg.velocity.dy = -abs(newBg.velocity.dy)
-                    }
-                    return newBg
-                }
-            }
         }
         .onDisappear {
             avatarTimer?.invalidate()
@@ -378,7 +266,7 @@ struct HomeView: View {
             }
         } else {
             withAnimation(.spring()) {
-                offset = .zero
+            offset = .zero
             }
         }
     }

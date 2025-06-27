@@ -63,14 +63,14 @@ struct ScholarshipCardView: View {
                     .frame(width: 44, height: 44)
                     .clipShape(Circle())
                     .shadow(radius: 4)
-                Text(scholarship.description)
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.8))
+            Text(scholarship.description)
+                .font(.body)
+                .foregroundColor(.white.opacity(0.8))
                     .multilineTextAlignment(.leading)
             }
-            .padding(.horizontal)
-            .opacity(isAnimating ? 1 : 0)
-            .offset(y: isAnimating ? 0 : 20)
+                .padding(.horizontal)
+                .opacity(isAnimating ? 1 : 0)
+                .offset(y: isAnimating ? 0 : 20)
             
             if isExpanded {
                 // Requirements with staggered animation
@@ -126,13 +126,13 @@ struct ScholarshipCardView: View {
                                 .resizable()
                                 .frame(width: 18, height: 18)
                             Text("Remind Me")
-                                .font(.subheadline.bold())
+                            .font(.subheadline.bold())
                         }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.purple.opacity(0.25))
-                        .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.purple.opacity(0.25))
+                            .cornerRadius(10)
                     }
                     Button(action: { addToCalendar() }) {
                         HStack(spacing: 8) {
@@ -140,13 +140,13 @@ struct ScholarshipCardView: View {
                                 .resizable()
                                 .frame(width: 18, height: 18)
                             Text("Add to Calendar")
-                                .font(.subheadline.bold())
+                            .font(.subheadline.bold())
                         }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.25))
-                        .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.blue.opacity(0.25))
+                            .cornerRadius(10)
                     }
                 }
                 
