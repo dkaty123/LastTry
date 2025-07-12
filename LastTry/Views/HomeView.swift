@@ -9,6 +9,7 @@ struct HomeView: View {
     @State private var offset = CGSize.zero
     @State private var currentIndex = 0
     @State private var showSearch = false
+    @State private var showFilters = false
     @State private var isAnimating = false
     // Avatar floating animation state
     @State private var catPosition: CGPoint = CGPoint(x: 100, y: 200)
@@ -64,6 +65,38 @@ struct HomeView: View {
     ]
     @State private var currentSwipeDirection: SwipeDirection? = nil
     
+    // Level definitions for gamified progress tracker
+    private let levels: [(min: Int, max: Int, name: String, emoji: String)] = [
+        (0, 1, "Rookie Explorer", "🛰️"),         // 2 needed
+        (2, 6, "Stellar Seeker", "🚀"),         // 5 needed
+        (7, 16, "Rising Scholar", "🌟"),        // 10 needed
+        (17, 34, "Comet Chaser", "☄️"),        // 18 needed
+        (35, 59, "Orbit Achiever", "🪐"),      // 25 needed
+        (60, 89, "Nebula Navigator", "🌌"),    // 30 needed
+        (90, 129, "Galaxy Guru", "🌠"),        // 40 needed
+        (130, 184, "Supernova Star", "💫"),    // 55 needed
+        (185, 254, "Cosmic Captain", "👩‍🚀"),  // 70 needed
+        (255, 339, "Legendary Voyager", "🏆"),  // 85 needed
+        (340, 340, "Ultimate Scholar", "👑")    // All scholarships
+    ]
+    
+    private func currentLevel(for count: Int) -> (level: Int, name: String, emoji: String, min: Int, max: Int) {
+        for (i, level) in levels.enumerated() {
+            if count >= level.min && count <= level.max {
+                return (i+1, level.name, level.emoji, level.min, level.max)
+            }
+        }
+        return (1, levels[0].name, levels[0].emoji, levels[0].min, levels[0].max)
+    }
+    
+    @State private var showGalaxyMap: Bool = false
+    
+    @State private var showLevelConfetti: Bool = false
+    @State private var justCompletedLevel: Bool = false
+    
+    @State private var displayedLevelInfo: (level: Int, name: String, emoji: String, min: Int, max: Int)? = nil
+    @State private var displayedAppliedInLevel: Int? = nil
+    
     init() {
         // Set the navigation bar appearance
         let appearance = UINavigationBarAppearance()
@@ -78,6 +111,19 @@ struct HomeView: View {
     }
     
     var body: some View {
+        let appliedCount = viewModel.savedOpportunities.count
+        let levelInfo = currentLevel(for: appliedCount)
+        let scholarshipsForLevel = max(1, levelInfo.max - levelInfo.min + 1)
+        let appliedInLevel = max(0, min(appliedCount - levelInfo.min, scholarshipsForLevel))
+        let progress = Double(appliedInLevel) / Double(scholarshipsForLevel)
+        let barWidth: CGFloat = 240
+        // Use displayed values during level-up animation, else use current
+        let showFrozen = justCompletedLevel && displayedLevelInfo != nil && displayedAppliedInLevel != nil
+        let showLevel = showFrozen ? displayedLevelInfo!.level : levelInfo.level
+        let showLevelName = showFrozen ? displayedLevelInfo!.name : levelInfo.name
+        let showApplied = showFrozen ? displayedAppliedInLevel! : appliedInLevel
+        let showProgress = showFrozen ? 1.0 : progress
+        let showScholarshipsForLevel = showFrozen ? (displayedLevelInfo!.max - displayedLevelInfo!.min + 1) : scholarshipsForLevel
         ZStack {
             ScholarSplashBackgroundView(motion: staticMotion)
                 .ignoresSafeArea()
@@ -96,20 +142,22 @@ struct HomeView: View {
                     }
                 }()
                 ZStack {
-                    // UFO base
+                    // UFO base with NO flame
                     Image("ufo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: floatingCat.size * 2.0, height: floatingCat.size * 1.4)
                         .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22))
                         .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
+                        .rotationEffect(.radians(showCatSpeech ? 0 : sin(floatingCatOscillation) * 0.18))
                         .animation(.easeInOut(duration: 0.7), value: floatingCat.position)
-                    // Cat avatar inside UFO
+                    // Cat avatar inside UFO, rotates with UFO
                     Image(imageName)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: floatingCat.size * 0.68, height: floatingCat.size * 0.68)
                         .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22) - floatingCat.size * 0.36)
+                        .rotationEffect(.radians(showCatSpeech ? 0 : sin(floatingCatOscillation) * 0.18))
                         .shadow(color: Color.white.opacity(0.18), radius: 8, x: 0, y: 2)
                         .animation(.easeInOut(duration: 0.7), value: floatingCat.position)
                     if let speech = catSpeech, showCatSpeech {
@@ -134,7 +182,8 @@ struct HomeView: View {
                                 .opacity(showCatSpeech ? 1 : 0)
                                 .transition(.opacity)
                         }
-                        .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22) - floatingCat.size * 0.7)
+                        // Revert speech bubble to previous position
+                        .position(x: floatingCat.position.x, y: min(floatingCat.position.y, screenHeight * 0.22) - floatingCat.size * 0.85)
                         .zIndex(2)
                     }
                 }
@@ -158,6 +207,14 @@ struct HomeView: View {
                         } else if cat.position.y > upperLimit - cat.size/2 {
                             cat.velocity.dy *= -1
                             cat.position.y = upperLimit - cat.size/2
+                        }
+                        // Clamp cat's Y position if speech bubble is visible
+                        if showCatSpeech {
+                            let bubbleClearance = cat.size * 1.1 // adjust as needed
+                            let minY = cat.size/2 + bubbleClearance
+                            if cat.position.y < minY {
+                                cat.position.y = minY
+                            }
                         }
                         // Gentle angle rotation, but keep mostly upright
                         cat.angle += cat.angleSpeed
@@ -186,8 +243,9 @@ struct HomeView: View {
             }
             .zIndex(1)
             VStack {
-                if currentIndex < viewModel.scholarships.count {
-                    ScholarshipCardView(scholarship: viewModel.scholarships[currentIndex], swipeDirection: currentSwipeDirection)
+                let allOpportunities = viewModel.createMixedOpportunityList()
+                if currentIndex < allOpportunities.count {
+                    OpportunityCardView(opportunity: allOpportunities[currentIndex], swipeDirection: currentSwipeDirection)
                         .frame(height: 420)
                         .offset(x: offset.width, y: 0)
                         .rotationEffect(.degrees(Double(offset.width / 20)))
@@ -212,39 +270,94 @@ struct HomeView: View {
                                 }
                         )
                 } else {
-                    VStack(spacing: 20) {
-                        Image(systemName: "rocket.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 100)
-                            .foregroundColor(.white)
-                            .rotationEffect(.degrees(45))
-                            .offset(y: -50)
-                            .animation(
-                                Animation.easeInOut(duration: 1)
-                                    .repeatForever(autoreverses: true),
-                                value: true
-                            )
-                        Text("No more scholarships in your orbit!")
-                            .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                        
-                        Text("Check back later for new opportunities")
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                    .padding()
+                    Image(systemName: "rocket.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                        .foregroundColor(.white)
+                        .rotationEffect(.degrees(45))
+                        .offset(y: -50)
+                        .animation(
+                            Animation.easeInOut(duration: 1)
+                                .repeatForever(autoreverses: true),
+                            value: true
+                        )
+                    Text("No more opportunities in your orbit!")
+                        .font(Font.custom("SF Pro Rounded", size: 24).weight(.bold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                    Text("Try adjusting your filters or check back later")
+                        .foregroundColor(.white.opacity(0.8))
                 }
             }
             .zIndex(10)
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 16) {
+                    Button(action: { showFilters = true }) {
+                        Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                            .foregroundColor(.blue)
+                            .font(.title2)
+                    }
+                    // Notification bell button should remain here if present
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                Button(action: { showGalaxyMap = true }) {
+                    VStack(spacing: 2) {
+                        // Disable animation on level change
+                        Text("Level \(showLevel): \(showLevelName)")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundColor(.yellow)
+                            .shadow(color: .purple.opacity(0.4), radius: 4, x: 0, y: 2)
+                            .frame(height: 16)
+                            .animation(nil, value: showLevel)
+                        // Progress bar for current level with label centered
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(Color.white.opacity(0.12))
+                                .frame(width: barWidth, height: 8)
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(LinearGradient(gradient: Gradient(colors: [Color.purple, Color.blue]), startPoint: .leading, endPoint: .trailing))
+                                .frame(width: max(0, CGFloat(showProgress)) * barWidth, height: 8)
+                                .animation(.easeInOut(duration: 0.5), value: appliedCount)
+                            Text("Applied \(showApplied) / \(showScholarshipsForLevel) Opportunities")
+                                .font(.system(size: 8.5, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white)
+                                .shadow(color: .black.opacity(0.18), radius: 2, x: 0, y: 1)
+                                .frame(width: barWidth, alignment: .center)
+                        }
+                        .overlay(
+                            ZStack {
+                                if showLevelConfetti {
+                                    ConfettiView()
+                                        .frame(width: barWidth, height: 40)
+                                        .offset(y: -20)
+                                        .transition(.opacity)
+                                }
+                            }, alignment: .top
+                        )
+                    }
+                    .animation(nil, value: showLevel)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
         .sheet(isPresented: $showSearch) {
             SmartSearchView()
+        }
+        .sheet(isPresented: $showFilters) {
+            OpportunityFilterView(isPresented: $showFilters)
+        }
+        .sheet(isPresented: $showGalaxyMap) {
+            GalaxyMapView(levels: levels, currentLevel: levelInfo.level)
         }
         .onAppear {
             viewModel.updateDailyLoginStreak()
             viewModel.unlockStreakAchievementsIfNeeded(achievementViewModel: achievementViewModel)
+            viewModel.updateMatchedOpportunities()
             withAnimation(.easeIn(duration: 0.3)) {
                 isAnimating = true
             }
@@ -253,6 +366,25 @@ struct HomeView: View {
         }
         .onDisappear {
             avatarTimer?.invalidate()
+        }
+        .onChange(of: appliedCount) { newValue in
+            // Level completion animation logic
+            let scholarshipsForLevel = max(1, levelInfo.max - levelInfo.min + 1)
+            let appliedInLevel = max(0, min(newValue - levelInfo.min, scholarshipsForLevel))
+            if appliedInLevel == scholarshipsForLevel && !justCompletedLevel {
+                // Freeze display at full bar and current level
+                displayedLevelInfo = levelInfo
+                displayedAppliedInLevel = scholarshipsForLevel
+                justCompletedLevel = true
+                showLevelConfetti = true
+                // Hide confetti and reset after 1 second, then update to next level
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    showLevelConfetti = false
+                    justCompletedLevel = false
+                    displayedLevelInfo = nil
+                    displayedAppliedInLevel = nil
+                }
+            }
         }
     }
     
@@ -272,28 +404,31 @@ struct HomeView: View {
     }
     
     private func saveScholarship() {
-        guard currentIndex < viewModel.scholarships.count else { return }
-        viewModel.saveScholarship(viewModel.scholarships[currentIndex])
+        let allOpportunities = viewModel.createMixedOpportunityList()
+        guard currentIndex < allOpportunities.count else { return }
+        let opportunity = allOpportunities[currentIndex]
+        viewModel.saveOpportunity(opportunity)
         isAnimating = false
         withAnimation(.spring()) {
             offset = CGSize(width: 500, height: 0)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-        currentIndex += 1
-        offset = .zero
+            currentIndex += 1
+            offset = .zero
             isAnimating = true
         }
     }
     
     private func skipScholarship() {
-        guard currentIndex < viewModel.scholarships.count else { return }
+        let allOpportunities = viewModel.createMixedOpportunityList()
+        guard currentIndex < allOpportunities.count else { return }
         isAnimating = false
         withAnimation(.spring()) {
             offset = CGSize(width: -500, height: 0)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-        currentIndex += 1
-        offset = .zero
+            currentIndex += 1
+            offset = .zero
             isAnimating = true
         }
     }

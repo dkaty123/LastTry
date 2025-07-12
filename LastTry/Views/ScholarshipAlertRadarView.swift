@@ -91,9 +91,9 @@ struct ScholarshipAlertRadarView: View {
             
             // Quick Stats
             HStack(spacing: 20) {
-                StatCard(title: "Today", value: "\(viewModel.todayAlerts)", color: .green)
-                StatCard(title: "This Week", value: "\(viewModel.weekAlerts)", color: .blue)
-                StatCard(title: "Match Rate", value: "\(viewModel.matchRate)%", color: .orange)
+                RadarStatCard(title: "Today", value: "\(viewModel.todayAlerts)", icon: "calendar", color: .green)
+                RadarStatCard(title: "This Week", value: "\(viewModel.weekAlerts)", icon: "calendar", color: .blue)
+                RadarStatCard(title: "Match Rate", value: "\(viewModel.matchRate)%", icon: "percent", color: .orange)
             }
         }
         .padding()
@@ -168,25 +168,47 @@ struct ScholarshipAlertRadarView: View {
     }
 }
 
-struct StatCard: View {
+struct RadarStatCard: View {
     let title: String
     let value: String
+    let icon: String
     let color: Color
+    @State private var animateCard = false
     
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption)
+                    .foregroundColor(color)
+                
+                Text(title)
+                    .font(.caption.bold())
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            
             Text(value)
                 .font(.title2.bold())
-                .foregroundColor(color)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.white)
+                .scaleEffect(animateCard ? 1.1 : 1.0)
+                .animation(.easeInOut(duration: 0.3), value: animateCard)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(Color.white.opacity(0.1))
-        .cornerRadius(8)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(color.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.3).delay(0.2)) {
+                animateCard = true
+            }
+        }
     }
 }
 

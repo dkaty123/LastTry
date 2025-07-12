@@ -40,8 +40,8 @@ struct MainNavigationView: View {
                 Group {
                     switch selectedTab {
                     case 0: HomeView()
-                    case 1: ScholarshipMatchView()
-                    case 2: SavedScholarshipsView()
+                    case 1: OpportunityMatchView()
+                    case 2: SavedOpportunitiesView()
                     case 3: AvatarGridPageView()
                     case 4: MoreTabView()
                     default: HomeView()

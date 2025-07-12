@@ -69,13 +69,16 @@ class SmartSearchViewModel: ObservableObject {
     }
     
     private func loadPopularSearches() {
-        // TODO: Replace with actual popular searches from backend
+        // Broader category-based popular searches
         popularSearches = [
-            "STEM Scholarships",
-            "Merit Based",
-            "Undergraduate",
-            "Graduate",
-            "International"
+            "STEM",
+            "Business",
+            "Technology",
+            "Arts",
+            "Engineering",
+            "Medicine",
+            "Law",
+            "Education"
         ]
     }
     

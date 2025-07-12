@@ -11,16 +11,34 @@ struct BookMentorListView: View {
     ]
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                ForEach(mentors) { mentor in
-                    MentorCardView(mentor: mentor) {
-                        selectedMentor = mentor
-                        showBookingSheet = true
+        ZStack {
+            Theme.primaryGradient.ignoresSafeArea()
+            VStack(spacing: 0) {
+                // Enhanced header
+                VStack(spacing: 4) {
+                    Text("Mentorship Marketplace")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .shadow(color: Theme.accentColor.opacity(0.4), radius: 8, x: 0, y: 4)
+                    Text("Book a session with top student mentors")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                .padding(.top, 32)
+                .padding(.bottom, 12)
+                ScrollView {
+                    VStack(spacing: 24) {
+                        ForEach(mentors) { mentor in
+                            MentorCardView(mentor: mentor) {
+                                selectedMentor = mentor
+                                showBookingSheet = true
+                            }
+                        }
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 32)
                 }
             }
-            .padding()
         }
         .sheet(isPresented: $showBookingSheet) {
             if let mentor = selectedMentor {
@@ -45,44 +63,85 @@ struct MentorCardView: View {
     let onBook: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 15) {
-                Image(systemName: mentor.image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(Theme.accentColor)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(mentor.name)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    Text(mentor.university)
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.7))
-                    Text(mentor.expertise)
-                        .font(.caption)
-                        .foregroundColor(.yellow)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top, spacing: 18) {
+                ZStack {
+                    Circle()
+                        .fill(Theme.accentColor.opacity(0.18))
+                        .frame(width: 62, height: 62)
+                    Image(systemName: mentor.image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 48, height: 48)
+                        .foregroundColor(Theme.accentColor)
                 }
-                Spacer()
-                Button(action: onBook) {
-                    Text("Book")
-                        .font(.subheadline.bold())
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 8)
-                        .background(Theme.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text(mentor.name)
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                        Spacer()
+                        // Price chip
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(.yellow)
+                            Text("\(mentor.price)")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundColor(.yellow)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color.yellow.opacity(0.15))
+                        .cornerRadius(10)
+                    }
+                    HStack(spacing: 8) {
+                        Label(mentor.university, systemImage: "graduationcap.fill")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.8))
+                        Spacer()
+                    }
+                    HStack(spacing: 8) {
+                        Label(mentor.expertise, systemImage: "lightbulb.fill")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundColor(.blue)
+                        Spacer()
+                    }
                 }
             }
+            .padding(.bottom, 8)
             Text(mentor.bio)
-                .font(.body)
-                .foregroundColor(.white.opacity(0.9))
-                .padding(.top, 4)
+                .font(.system(size: 15, weight: .regular, design: .rounded))
+                .foregroundColor(.white.opacity(0.92))
+                .padding(.bottom, 10)
+                .padding(.leading, 2)
+            HStack {
+                Spacer()
+                Button(action: onBook) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "calendar.badge.plus")
+                        Text("Book Session")
+                    }
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 10)
+                    .background(Theme.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(14)
+                    .shadow(color: Theme.accentColor.opacity(0.18), radius: 4, x: 0, y: 2)
+                }
+            }
         }
-        .padding()
-        .background(Color.black.opacity(0.25))
-        .cornerRadius(18)
-        .shadow(color: Theme.accentColor.opacity(0.15), radius: 6, x: 0, y: 2)
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white.opacity(0.07))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(Theme.accentColor.opacity(0.18), lineWidth: 1.5)
+                )
+        )
+        .shadow(color: Theme.accentColor.opacity(0.10), radius: 10, x: 0, y: 4)
     }
 }
 
@@ -94,28 +153,54 @@ struct BookMentorSessionSheet: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
-                Image(systemName: mentor.image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 70, height: 70)
-                    .foregroundColor(Theme.accentColor)
-                Text("Book a session with \(mentor.name)")
-                    .font(.title2.bold())
-                    .foregroundColor(.white)
-                Text(mentor.bio)
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.8))
-                DatePicker("Select Time", selection: $selectedTime, in: Date()..., displayedComponents: .hourAndMinute)
-                    .datePickerStyle(WheelDatePickerStyle())
-                    .labelsHidden()
-                    .background(Color.white.opacity(0.1))
-                    .cornerRadius(10)
+                // Mentor profile card at top
+                VStack(spacing: 8) {
+                    ZStack {
+                        Circle()
+                            .fill(Theme.accentColor.opacity(0.18))
+                            .frame(width: 80, height: 80)
+                        Image(systemName: mentor.image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(Theme.accentColor)
+                    }
+                    Text(mentor.name)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    Text(mentor.university)
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.8))
+                    Text(mentor.expertise)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundColor(.blue)
+                }
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(Color.white.opacity(0.06))
+                )
+                // Time selection
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Select a time for your session:")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white)
+                    DatePicker("Select Time", selection: $selectedTime, in: Date()..., displayedComponents: .hourAndMinute)
+                        .datePickerStyle(WheelDatePickerStyle())
+                        .labelsHidden()
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(10)
+                }
+                .padding(.horizontal, 8)
+                // Confirm button
                 Button(action: {
                     // Booking logic here
                     dismiss()
                 }) {
                     Text("Confirm Booking for \(mentor.price) points")
-                        .font(.headline)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Theme.accentColor)

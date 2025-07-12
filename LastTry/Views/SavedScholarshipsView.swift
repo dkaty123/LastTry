@@ -3,50 +3,40 @@ import MessageUI
 import EventKit
 import EventKitUI
 
-struct SavedScholarshipsView: View {
+struct SavedOpportunitiesView: View {
     @EnvironmentObject private var viewModel: AppViewModel
     @State private var showDeleteConfirmation = false
     @State private var showMailComposer = false
     @State private var mailResult: Result<MFMailComposeResult, Error>? = nil
     @State private var showMailError = false
     @StateObject private var motion = SplashMotionManager()
+    @State private var selectedFilter: SavedFilter = .all
+    
+    enum SavedFilter: String, CaseIterable {
+        case all = "All"
+        case upcoming = "Upcoming"
+        case highValue = "High Value"
+        case urgent = "Urgent"
+    }
     
     var body: some View {
         ZStack {
             ScholarSplashBackgroundView(motion: motion)
                 .ignoresSafeArea()
             ScholarSplashDriftingStarFieldView()
+                .ignoresSafeArea()
             
-            if viewModel.savedScholarships.isEmpty {
-                // Empty state view
-                VStack(spacing: 20) {
-                    Image(systemName: "star.circle")
-                        .font(.system(size: 60))
-                        .foregroundColor(.white)
-                    Text("No Saved Scholarships")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                    Text("Start exploring to find your perfect matches!")
-                        .foregroundColor(.white.opacity(0.8))
-                }
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(viewModel.savedScholarships) { scholarship in
-                            SavedScholarshipCard(scholarship: scholarship)
-                                .padding(.horizontal)
-                        }
-                    }
-                    .padding(.top)
-                }
+            VStack(spacing: 0) {
+                enhancedHeaderView
+                filterButtonsView
+                contentView
             }
         }
-        .navigationTitle("Saved Scholarships")
-        .navigationBarTitleDisplayMode(.inline)
-        .alert("Clear All Saved Scholarships?", isPresented: $showDeleteConfirmation) {
+        .navigationBarHidden(true)
+        .alert("Clear All Saved Opportunities?", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Clear All", role: .destructive) {
-                viewModel.clearAllSavedScholarships()
+                viewModel.clearSavedOpportunities()
             }
         } message: {
             Text("This action cannot be undone.")
@@ -54,7 +44,7 @@ struct SavedScholarshipsView: View {
         .sheet(isPresented: $showMailComposer) {
             MailView(
                 recipients: [],
-                subject: "My Saved Scholarships",
+                subject: "My Saved Opportunities",
                 messageBody: emailBody,
                 result: $mailResult
             )
@@ -64,195 +54,276 @@ struct SavedScholarshipsView: View {
         }
     }
     
-    private var emailBody: String {
-        guard !viewModel.savedScholarships.isEmpty else {
-            return "You have no saved scholarships."
-        }
-        var lines: [String] = ["Here are my saved scholarships:\n"]
-        for scholarship in viewModel.savedScholarships {
-            let amountString = String(format: "$%.2f", scholarship.amount)
-            let deadlineString = scholarship.deadline.formatted(date: .abbreviated, time: .omitted)
-            lines.append("• \(scholarship.name)\n  Amount: \(amountString)\n  Deadline: \(deadlineString)\n")
+    private var enhancedHeaderView: some View {
+        VStack(spacing: 16) {
+            // Header with title and actions
+            HStack {
+                // Placeholder for balance
+                Circle()
+                    .fill(Color.clear)
+                    .frame(width: 40, height: 40)
+                
+                Spacer()
+                
+                VStack(spacing: 6) {
+                    Text("Saved Opportunities")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .shadow(color: Theme.accentColor.opacity(0.5), radius: 10, x: 0, y: 5)
+                    
+                    Text("Your collection of opportunities")
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                
+                Spacer()
+                
+                // Saved count badge
+                ZStack {
+                    Circle()
+                        .fill(Theme.accentColor.opacity(0.2))
+                        .frame(width: 40, height: 40)
+                    
+                    Text("\(filteredOpportunities.count)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.accentColor)
+                }
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            
+            // Stats card
+            HStack(spacing: 20) {
+                SavedStatCard(
+                    icon: "bookmark.fill",
+                    title: "Total Saved",
+                    value: "\(viewModel.savedOpportunities.count)",
+                    color: Theme.accentColor
+                )
+                
+                SavedStatCard(
+                    icon: "dollarsign.circle.fill",
+                    title: "Total Value",
+                    value: "$\(Int(totalValue))",
+                    color: Theme.successColor
+                )
+                
+                SavedStatCard(
+                    icon: "clock.fill",
+                    title: "Upcoming",
+                    value: "\(upcomingCount)",
+                    color: Theme.amberColor
+                )
+            }
+            .padding(.horizontal, 20)
+        }
+    }
+    
+    private var filterButtonsView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(SavedFilter.allCases, id: \.self) { filter in
+                    Button(action: {
+                        selectedFilter = filter
+                    }) {
+                        Text(filter.rawValue)
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundColor(selectedFilter == filter ? .white : .white.opacity(0.7))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(selectedFilter == filter ? Theme.accentColor : Theme.cardBackground.opacity(0.6))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .stroke(selectedFilter == filter ? Theme.accentColor : Theme.cardBorder.opacity(0.3), lineWidth: 1)
+                                    )
+                            )
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+        }
+    }
+    
+    private var contentView: some View {
+        Group {
+            if filteredOpportunities.isEmpty {
+                enhancedEmptyStateView
+            } else {
+                enhancedOpportunityListView
+            }
+        }
+    }
+    
+    private var filteredOpportunities: [Opportunity] {
+        switch selectedFilter {
+        case .all:
+            return viewModel.savedOpportunities
+        case .upcoming:
+            let thirtyDaysFromNow = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
+            return viewModel.savedOpportunities.filter { $0.deadline != nil && $0.deadline! <= thirtyDaysFromNow }
+        case .highValue:
+            return viewModel.savedOpportunities.filter { ($0.amount ?? 0) >= 10000 || ($0.stipend ?? 0) >= 10000 }
+        case .urgent:
+            let sevenDaysFromNow = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
+            return viewModel.savedOpportunities.filter { $0.deadline != nil && $0.deadline! <= sevenDaysFromNow }
+        }
+    }
+    
+    private var totalValue: Double {
+        viewModel.savedOpportunities.reduce(0) { $0 + ($1.amount ?? 0) + ($1.stipend ?? 0) }
+    }
+    
+    private var upcomingCount: Int {
+        let thirtyDaysFromNow = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
+        return viewModel.savedOpportunities.filter { $0.deadline != nil && $0.deadline! <= thirtyDaysFromNow }.count
+    }
+    
+    private var enhancedEmptyStateView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            
+            ZStack {
+                Circle()
+                    .fill(Theme.accentColor.opacity(0.1))
+                    .frame(width: 120, height: 120)
+                
+                Image(systemName: "bookmark.slash")
+                    .font(.system(size: 50, weight: .medium))
+                    .foregroundColor(Theme.accentColor)
+            }
+            
+            VStack(spacing: 12) {
+                Text("No saved opportunities yet!")
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                
+                Text("Start exploring to find and save your perfect matches.")
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+            
+            // Action buttons
+            VStack(spacing: 12) {
+                Button(action: {
+                    // Navigate to explore
+                }) {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 16, weight: .medium))
+                        
+                        Text("Explore Opportunities")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Theme.accentColor)
+                            .shadow(color: Theme.accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                    )
+                }
+                
+                Button(action: {
+                    // Navigate to matches
+                }) {
+                    HStack {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 16, weight: .medium))
+                        
+                        Text("View Matches")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Theme.accentColor)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Theme.cardBackground.opacity(0.8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Theme.accentColor.opacity(0.5), lineWidth: 1)
+                            )
+                    )
+                }
+            }
+            
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    private var enhancedOpportunityListView: some View {
+        ScrollView {
+            LazyVStack(spacing: 20) {
+                ForEach(filteredOpportunities) { opportunity in
+                    OpportunityCardView(opportunity: opportunity, swipeDirection: nil)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 40)
+        }
+    }
+    
+    private var emailBody: String {
+        guard !viewModel.savedOpportunities.isEmpty else {
+            return "You have no saved opportunities."
+        }
+        var lines: [String] = ["Here are my saved opportunities:\n"]
+        for opportunity in viewModel.savedOpportunities {
+            let amountString = String(format: "$%.2f", opportunity.amount ?? 0)
+            let deadlineString = opportunity.deadline?.formatted(date: .abbreviated, time: .omitted) ?? "N/A"
+            lines.append("• \(opportunity.title)\n  Amount: \(amountString)\n  Deadline: \(deadlineString)\n")
+        }
         return lines.joined(separator: "\n")
     }
 }
 
-struct SavedScholarshipCard: View {
-    let scholarship: Scholarship
-    @State private var isExpanded = false
-    @State private var showCalendarSheet = false
-    @State private var calendarEvent: EKEvent? = nil
-    @State private var calendarEventStore: EKEventStore? = nil
+struct SavedStatCard: View {
+    let icon: String
+    let title: String
+    let value: String
+    let color: Color
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-            Text(scholarship.name)
-                    .font(.title3)
-                    .bold()
-                .foregroundColor(.white)
+        VStack(spacing: 8) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.2))
+                    .frame(width: 40, height: 40)
                 
-                Spacer()
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(color)
+            }
+            
+            VStack(spacing: 2) {
+                Text(value)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
                 
-                Button(action: {
-                    // Implement delete action
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.white.opacity(0.7))
-                        .font(.title3)
-                }
-            }
-            
-            Text(scholarship.description)
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
-                .lineLimit(isExpanded ? nil : 2)
-            
-            HStack {
-                Text("$\(scholarship.amount, specifier: "%.2f")")
-                    .font(.headline)
-                    .foregroundColor(.green)
-                
-                Spacer()
-                
-                Text(scholarship.deadline, style: .date)
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.6))
-            }
-            
-            // Countdown widget always visible
-            DeadlineCountdownView(deadline: scholarship.deadline, scholarshipName: scholarship.name, amount: Int(scholarship.amount))
-            
-            // Reminder and Calendar buttons
-            HStack(spacing: 16) {
-                Button(action: { scheduleDeadlineReminder() }) {
-                    Label("Remind Me", systemImage: "bell.badge.fill")
-                        .font(.subheadline.bold())
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.purple.opacity(0.25))
-                        .cornerRadius(10)
-                }
-                Button(action: { addToCalendar() }) {
-                    Label("Add to Calendar", systemImage: "calendar.badge.plus")
-                        .font(.subheadline.bold())
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.25))
-                        .cornerRadius(10)
-                }
-            }
-            .sheet(isPresented: $showCalendarSheet) {
-                if let event = calendarEvent, let eventStore = calendarEventStore {
-                    CalendarEventEditView(event: event, eventStore: eventStore) { showCalendarSheet = false }
-                }
-            }
-            
-            if isExpanded {
-                VStack(alignment: .leading, spacing: 12) {
-                    Divider()
-                        .background(Color.white.opacity(0.3))
-                    
-                    Text("Requirements")
-                        .font(.headline)
-                            .foregroundColor(.white)
-                        
-                        ForEach(scholarship.requirements, id: \.self) { requirement in
-                        HStack(alignment: .top) {
-                                Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.subheadline)
-                            
-                                Text(requirement)
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.8))
-                        }
-                    }
-                    
-                    if let website = scholarship.website {
-                        Link(destination: URL(string: website)!) {
-                            HStack {
-                            Text("Visit Website")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white)
-                                
-                                Image(systemName: "arrow.up.right")
-                                    .font(.caption)
-                                .foregroundColor(.white)
-                            }
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 12)
-                            .background(Color.green.opacity(0.3))
-                            .cornerRadius(8)
-                        }
-                    }
-                }
-                .padding(.top, 8)
-            }
-            
-            Button(action: { withAnimation { isExpanded.toggle() } }) {
-                HStack {
-                    Spacer()
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.green)
-                        .font(.title3)
-                    Spacer()
-                }
+                Text(title)
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.7))
             }
         }
-        .padding()
-        .background(Color.white.opacity(0.1))
-        .cornerRadius(15)
-        .padding(.horizontal)
-    }
-    
-    // MARK: - Reminders & Calendar
-    private func scheduleDeadlineReminder() {
-        // TODO: Implement local notification scheduling for the deadline
-    }
-    private func addToCalendar() {
-        let eventStore = EKEventStore()
-        eventStore.requestAccess(to: .event) { granted, error in
-            if granted {
-                let event = EKEvent(eventStore: eventStore)
-                event.title = scholarship.name
-                event.startDate = scholarship.deadline
-                event.endDate = scholarship.deadline.addingTimeInterval(3600) // 1 hour
-                event.notes = scholarship.description
-                event.calendar = eventStore.defaultCalendarForNewEvents
-                event.location = ""
-                event.url = scholarship.website != nil ? URL(string: scholarship.website!) : nil
-                calendarEvent = event
-                calendarEventStore = eventStore
-                showCalendarSheet = true
-            } else {
-                // Handle denied access (show alert, etc.)
-            }
-        }
-    }
-}
-
-struct EmptySavedView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "bookmark.slash")
-                .font(.system(size: 60))
-                .foregroundColor(.white.opacity(0.5))
-            
-            Text("No Saved Scholarships")
-                .font(.title2)
-                .bold()
-                .foregroundColor(.white)
-            
-            Text("Save scholarships you're interested in to track them here")
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Theme.cardBackground.opacity(0.8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Theme.cardBorder.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .shadow(color: color.opacity(0.2), radius: 8, x: 0, y: 4)
     }
 }
 
@@ -293,39 +364,7 @@ struct MailView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: MFMailComposeViewController, context: Context) {}
 }
 
-// CalendarEventEditView for presenting EKEventEditViewController
-struct CalendarEventEditView: UIViewControllerRepresentable {
-    let event: EKEvent
-    let eventStore: EKEventStore
-    var onDismiss: () -> Void
-    
-    func makeUIViewController(context: Context) -> EKEventEditViewController {
-        let controller = EKEventEditViewController()
-        controller.event = event
-        controller.eventStore = eventStore
-        controller.editViewDelegate = context.coordinator
-        return controller
-    }
-    
-    func updateUIViewController(_ uiViewController: EKEventEditViewController, context: Context) {}
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(onDismiss: onDismiss)
-    }
-    
-    class Coordinator: NSObject, EKEventEditViewDelegate {
-        let onDismiss: () -> Void
-        init(onDismiss: @escaping () -> Void) {
-            self.onDismiss = onDismiss
-        }
-        func eventEditViewController(_ controller: EKEventEditViewController, didCompleteWith action: EKEventEditViewAction) {
-            controller.dismiss(animated: true, completion: nil)
-            onDismiss()
-        }
-    }
-}
-
 #Preview {
-    SavedScholarshipsView()
+    SavedOpportunitiesView()
         .environmentObject(AppViewModel())
 } 

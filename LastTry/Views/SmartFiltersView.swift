@@ -1,5 +1,138 @@
 import SwiftUI
 
+// MARK: - Background Components
+
+struct StarryBackgroundView: View {
+    let animateStars: Bool
+    @State private var stars: [(id: Int, x: CGFloat, y: CGFloat, size: CGFloat, opacity: Double)] = []
+    
+    var body: some View {
+        ZStack {
+            // Gradient background
+            Theme.primaryGradient
+                .ignoresSafeArea()
+            
+            // Animated stars
+            ForEach(stars, id: \.id) { star in
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: star.size, height: star.size)
+                    .position(x: star.x, y: star.y)
+                    .opacity(star.opacity)
+                    .scaleEffect(animateStars ? 1.2 : 0.8)
+                    .animation(
+                        .easeInOut(duration: Double.random(in: 2...4))
+                        .repeatForever(autoreverses: true)
+                        .delay(Double.random(in: 0...2)),
+                        value: animateStars
+                    )
+            }
+        }
+        .onAppear {
+            generateStars()
+        }
+    }
+    
+    private func generateStars() {
+        stars = (0..<50).map { id in
+            (
+                id: id,
+                x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                y: CGFloat.random(in: 0...UIScreen.main.bounds.height),
+                size: CGFloat.random(in: 1...3),
+                opacity: Double.random(in: 0.3...0.8)
+            )
+        }
+    }
+}
+
+struct FloatingParticlesView: View {
+    @State private var particles: [(id: Int, x: CGFloat, y: CGFloat, size: CGFloat, speed: Double)] = []
+    @State private var animateParticles = false
+    
+    var body: some View {
+        ZStack {
+            ForEach(particles, id: \.id) { particle in
+                Circle()
+                    .fill(Theme.accentColor.opacity(0.3))
+                    .frame(width: particle.size, height: particle.size)
+                    .position(x: particle.x, y: particle.y)
+                    .blur(radius: 1)
+                    .scaleEffect(animateParticles ? 1.5 : 0.5)
+                    .opacity(animateParticles ? 0.8 : 0.2)
+                    .animation(
+                        .easeInOut(duration: particle.speed)
+                        .repeatForever(autoreverses: true)
+                        .delay(Double.random(in: 0...particle.speed)),
+                        value: animateParticles
+                    )
+            }
+        }
+        .onAppear {
+            generateParticles()
+            withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true)) {
+                animateParticles = true
+            }
+        }
+    }
+    
+    private func generateParticles() {
+        particles = (0..<20).map { id in
+            (
+                id: id,
+                x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                y: CGFloat.random(in: 0...UIScreen.main.bounds.height),
+                size: CGFloat.random(in: 2...6),
+                speed: Double.random(in: 2...5)
+            )
+        }
+    }
+}
+
+struct SpaceStatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    @State private var animateCard = false
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption)
+                    .foregroundColor(color)
+                
+                Text(title)
+                    .font(.caption.bold())
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            
+            Text(value)
+                .font(.title2.bold())
+                .foregroundColor(.white)
+                .scaleEffect(animateCard ? 1.1 : 1.0)
+                .animation(.easeInOut(duration: 0.3), value: animateCard)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(color.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.3).delay(0.2)) {
+                animateCard = true
+            }
+        }
+    }
+}
+
 struct SmartFiltersView: View {
     @EnvironmentObject private var viewModel: AppViewModel
     @State private var searchText = ""
@@ -15,6 +148,8 @@ struct SmartFiltersView: View {
     @State private var selectedLevel: EducationLevel = .any
     @State private var showFilters = false
     @State private var filteredScholarships: [Scholarship] = []
+    @State private var animateStars = false
+    @State private var showMascot = false
     
     private let countries = ["Any", "Canada", "United States", "International"]
     private let gpaRanges: [GPARange] = [.any, .low, .medium, .high]
@@ -45,8 +180,12 @@ struct SmartFiltersView: View {
     var body: some View {
         NavigationStack {
             ZStack {
+                // Animated starry background
                 Theme.primaryGradient
                     .ignoresSafeArea()
+                
+                // Animated stars overlay
+                starsOverlay
                 
                 VStack(spacing: 0) {
                     headerView
@@ -55,96 +194,206 @@ struct SmartFiltersView: View {
                     resultsView
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.title2)
+                            .foregroundColor(Theme.accentColor)
+                        
+                        Text("Filters")
+                            .font(.title2.bold())
+                            .foregroundColor(.white)
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        clearAllFilters()
+                    }) {
+                        Text("Clear All")
+                            .font(.subheadline.bold())
+                            .foregroundColor(Theme.accentColor)
+                    }
+                }
+            }
+            .toolbarBackground(Theme.backgroundColor, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .onAppear {
+                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                    animateStars = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    withAnimation(.spring()) {
+                        showMascot = true
+                    }
+                }
+                
                 applyFilters()
+            }
+        }
+    }
+    
+    private var starsOverlay: some View {
+        ZStack {
+            ForEach(0..<30, id: \.self) { index in
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: CGFloat.random(in: 1...3))
+                    .position(
+                        x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                        y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
+                    )
+                    .opacity(Double.random(in: 0.3...0.8))
+                    .scaleEffect(animateStars ? 1.2 : 0.8)
+                    .animation(
+                        .easeInOut(duration: Double.random(in: 2...4))
+                        .repeatForever(autoreverses: true)
+                        .delay(Double.random(in: 0...2)),
+                        value: animateStars
+                    )
             }
         }
     }
     
     private var headerView: some View {
         VStack(spacing: 16) {
-            Text("Smart Filters")
-                .font(.largeTitle.bold())
-                .foregroundColor(.white)
-                .shadow(color: Theme.accentColor.opacity(0.5), radius: 8, x: 0, y: 2)
+            // Subtitle and mascot
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Find your perfect scholarship match")
+                        .font(.headline)
+                        .foregroundColor(.white.opacity(0.9))
+                        .shadow(color: Theme.accentColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                }
+                
+                Spacer()
+                
+                // Animated mascot
+                if showMascot {
+                    Image(systemName: "telescope.fill")
+                        .font(.system(size: 32))
+                        .foregroundColor(Theme.accentColor)
+                        .shadow(color: Theme.accentColor.opacity(0.5), radius: 8)
+                        .scaleEffect(animateStars ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: animateStars)
+                }
+            }
             
-            Text("Find your perfect scholarship match")
-                .font(.headline)
-                .foregroundColor(.white.opacity(0.8))
+            // Stats cards
+            HStack(spacing: 12) {
+                SpaceStatCard(
+                    title: "Total",
+                    value: "\(viewModel.scholarships.count)",
+                    icon: "star.fill",
+                    color: Theme.accentColor
+                )
+                
+                SpaceStatCard(
+                    title: "Found",
+                    value: "\(filteredScholarships.count)",
+                    icon: "magnifyingglass",
+                    color: .green
+                )
+                
+                SpaceStatCard(
+                    title: "Saved",
+                    value: "\(viewModel.savedScholarships.count)",
+                    icon: "bookmark.fill",
+                    color: .orange
+                )
+            }
         }
-        .padding(.top, 32)
+        .padding(.top, 16)
         .padding(.bottom, 20)
+        .padding(.horizontal)
     }
     
     private var quickFiltersView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                QuickFilterButton(
-                    title: "Due This Month",
-                    icon: "calendar",
-                    isActive: showDeadlineThisMonth,
-                    action: {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Quick Filters")
+                    .font(.headline.bold())
+                    .foregroundColor(.white)
+                    .shadow(color: Theme.accentColor.opacity(0.3), radius: 2, x: 0, y: 1)
+                
+                Spacer()
+            }
+            .padding(.horizontal)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    EnhancedQuickFilterButton(
+                        title: "Due This Month",
+                        icon: "calendar",
+                        isActive: showDeadlineThisMonth,
+                        color: .red
+                    ) {
                         showDeadlineThisMonth.toggle()
                         applyFilters()
                     }
-                )
-                
-                QuickFilterButton(
-                    title: "No Essay",
-                    icon: "doc.text",
-                    isActive: showNoEssayRequired,
-                    action: {
+                    
+                    EnhancedQuickFilterButton(
+                        title: "No Essay",
+                        icon: "doc.text",
+                        isActive: showNoEssayRequired,
+                        color: .green
+                    ) {
                         showNoEssayRequired.toggle()
                         applyFilters()
                     }
-                )
-                
-                QuickFilterButton(
-                    title: "$5K+",
-                    icon: "dollarsign.circle",
-                    isActive: showHighAmount,
-                    action: {
+                    
+                    EnhancedQuickFilterButton(
+                        title: "$5K+",
+                        icon: "dollarsign.circle",
+                        isActive: showHighAmount,
+                        color: .yellow
+                    ) {
                         showHighAmount.toggle()
                         applyFilters()
                     }
-                )
-                
-                QuickFilterButton(
-                    title: "Easy Apply",
-                    icon: "checkmark.circle",
-                    isActive: false,
-                    action: {
+                    
+                    EnhancedQuickFilterButton(
+                        title: "Easy Apply",
+                        icon: "checkmark.circle",
+                        isActive: false,
+                        color: .blue
+                    ) {
                         // Filter for scholarships with minimal requirements
                         applyFilters()
                     }
-                )
-                
-                QuickFilterButton(
-                    title: "Easiest This Month",
-                    icon: "star.circle",
-                    isActive: false,
-                    action: {
+                    
+                    EnhancedQuickFilterButton(
+                        title: "Easiest This Month",
+                        icon: "star.circle",
+                        isActive: false,
+                        color: .purple
+                    ) {
                         // Special filter: easiest scholarships due this month
                         showDeadlineThisMonth = true
                         selectedSortOption = .effort
                         applyFilters()
                     }
-                )
+                }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
         }
         .padding(.bottom, 20)
     }
     
     private var searchAndFiltersView: some View {
         VStack(spacing: 16) {
-            // Search bar
+            // Enhanced search bar
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(Theme.accentColor.opacity(0.8))
+                    .font(.title3)
                 
                 TextField("Search scholarships...", text: $searchText)
                     .foregroundColor(.white)
+                    .font(.body)
                     .onChange(of: searchText) { _ in
                         applyFilters()
                     }
@@ -155,197 +404,239 @@ struct SmartFiltersView: View {
                         applyFilters()
                     }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(Theme.accentColor.opacity(0.8))
+                            .font(.title3)
                     }
                 }
             }
             .padding()
-            .background(Color.white.opacity(0.2))
-            .cornerRadius(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Theme.cardBackground.opacity(0.3))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Theme.accentColor.opacity(0.4), lineWidth: 1.5)
+                    )
+            )
+            .shadow(color: Theme.accentColor.opacity(0.2), radius: 8, x: 0, y: 4)
             .padding(.horizontal)
             
-            // Search suggestions
+            // Enhanced search suggestions
             if searchText.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(["STEM", "No Essay", "High Amount", "Canada", "Engineering", "Arts"], id: \.self) { suggestion in
-                            Button(action: {
-                                searchText = suggestion
-                                applyFilters()
-                            }) {
-                                Text(suggestion)
-                                    .font(.caption)
-                                    .foregroundColor(.white.opacity(0.8))
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.white.opacity(0.2))
-                                    .cornerRadius(16)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Popular Searches")
+                        .font(.caption.bold())
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.horizontal)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(["STEM", "No Essay", "High Amount", "Canada", "Engineering", "Arts", "Women", "Minority"], id: \.self) { suggestion in
+                                Button(action: {
+                                    searchText = suggestion
+                                    applyFilters()
+                                }) {
+                                    Text(suggestion)
+                                        .font(.caption.bold())
+                                        .foregroundColor(.white.opacity(0.9))
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color.white.opacity(0.2))
+                                                .overlay(
+                                                    Capsule()
+                                                        .stroke(Theme.accentColor.opacity(0.3), lineWidth: 1)
+                                                )
+                                        )
+                                }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
             }
             
-            // Advanced filters toggle
+            // Enhanced advanced filters toggle
             Button(action: {
-                withAnimation(.spring()) {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     showFilters.toggle()
                 }
             }) {
                 HStack {
                     Image(systemName: "slider.horizontal.3")
-                        .foregroundColor(.white)
+                        .foregroundColor(Theme.accentColor)
+                        .font(.title3)
                     Text("Advanced Filters")
                         .foregroundColor(.white)
+                        .font(.body.bold())
                     Spacer()
                     Image(systemName: showFilters ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.white)
+                        .foregroundColor(Theme.accentColor)
+                        .font(.title3)
+                        .rotationEffect(.degrees(showFilters ? 180 : 0))
+                        .animation(.spring(), value: showFilters)
                 }
                 .padding()
-                .background(Color.white.opacity(0.2))
-                .cornerRadius(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Theme.cardBackground.opacity(0.3))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Theme.accentColor.opacity(0.4), lineWidth: 1.5)
+                        )
+                )
+                .shadow(color: Theme.accentColor.opacity(0.2), radius: 8, x: 0, y: 4)
                 .padding(.horizontal)
             }
             
-            // Advanced filters
+            // Enhanced advanced filters
             if showFilters {
-                advancedFiltersView
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                enhancedAdvancedFiltersView
+                    .transition(.asymmetric(
+                        insertion: .opacity.combined(with: .move(edge: .top)),
+                        removal: .opacity.combined(with: .move(edge: .top))
+                    ))
             }
         }
     }
     
-    private var advancedFiltersView: some View {
-        VStack(spacing: 16) {
+    private var enhancedAdvancedFiltersView: some View {
+        VStack(spacing: 20) {
             // Categories
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Categories")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
+            EnhancedFilterSection(
+                title: "Categories",
+                icon: "tag.fill"
+            ) {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
                     ForEach(Scholarship.ScholarshipCategory.allCases, id: \.self) { category in
-                        FilterChip(
+                        EnhancedFilterChip(
                             title: category.rawValue.capitalized,
                             isSelected: selectedCategories.contains(category),
-                            action: {
-                                if selectedCategories.contains(category) {
-                                    selectedCategories.remove(category)
-                                } else {
-                                    selectedCategories.insert(category)
-                                }
-                                applyFilters()
+                            color: Theme.accentColor
+                        ) {
+                            if selectedCategories.contains(category) {
+                                selectedCategories.remove(category)
+                            } else {
+                                selectedCategories.insert(category)
                             }
-                        )
+                            applyFilters()
+                        }
                     }
                 }
             }
             
             // Amount range
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Amount Range")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                HStack {
-                    Text("$\(Int(minAmount))")
-                        .foregroundColor(.white.opacity(0.8))
+            EnhancedFilterSection(
+                title: "Amount Range",
+                icon: "dollarsign.circle.fill"
+            ) {
+                VStack(spacing: 12) {
+                    HStack {
+                        Text("$\(Int(minAmount))")
+                            .font(.caption.bold())
+                            .foregroundColor(.white.opacity(0.8))
+                        
+                        Spacer()
+                        
+                        Text("$\(Int(maxAmount))")
+                            .font(.caption.bold())
+                            .foregroundColor(.white.opacity(0.8))
+                    }
                     
-                    Slider(value: $minAmount, in: 0...50000, step: 1000)
-                        .accentColor(Theme.accentColor)
+                    RangeSlider(minValue: $minAmount, maxValue: $maxAmount, bounds: 0...50000)
                         .onChange(of: minAmount) { _ in
                             if minAmount > maxAmount {
                                 maxAmount = minAmount
                             }
                             applyFilters()
                         }
-                    
-                    Text("$\(Int(maxAmount))")
-                        .foregroundColor(.white.opacity(0.8))
+                        .onChange(of: maxAmount) { _ in
+                            applyFilters()
+                        }
                 }
             }
             
             // GPA Range
-            VStack(alignment: .leading, spacing: 8) {
-                Text("GPA Range")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                Picker("GPA Range", selection: $selectedGPA) {
-                    ForEach(gpaRanges, id: \.self) { range in
-                        Text(range.rawValue).tag(range)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .onChange(of: selectedGPA) { _ in
+            EnhancedFilterSection(
+                title: "GPA Range",
+                icon: "graduationcap.fill"
+            ) {
+                EnhancedSegmentedPicker(
+                    selection: $selectedGPA,
+                    options: gpaRanges,
+                    color: .green
+                ) {
                     applyFilters()
                 }
             }
             
             // Education Level
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Education Level")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                Picker("Education Level", selection: $selectedLevel) {
-                    ForEach(educationLevels, id: \.self) { level in
-                        Text(level.rawValue).tag(level)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .onChange(of: selectedLevel) { _ in
+            EnhancedFilterSection(
+                title: "Education Level",
+                icon: "book.fill"
+            ) {
+                EnhancedSegmentedPicker(
+                    selection: $selectedLevel,
+                    options: educationLevels,
+                    color: .blue
+                ) {
                     applyFilters()
                 }
             }
             
             // Country
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Country")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                Picker("Country", selection: $selectedCountry) {
-                    ForEach(countries, id: \.self) { country in
-                        Text(country).tag(country)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .onChange(of: selectedCountry) { _ in
+            EnhancedFilterSection(
+                title: "Country",
+                icon: "globe"
+            ) {
+                EnhancedSegmentedPicker(
+                    selection: $selectedCountry,
+                    options: countries,
+                    color: .orange
+                ) {
                     applyFilters()
                 }
             }
             
             // Sort options
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Sort By")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                Picker("Sort By", selection: $selectedSortOption) {
-                    ForEach(SortOption.allCases, id: \.self) { option in
-                        Text(option.rawValue).tag(option)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .onChange(of: selectedSortOption) { _ in
+            EnhancedFilterSection(
+                title: "Sort By",
+                icon: "arrow.up.arrow.down"
+            ) {
+                EnhancedSegmentedPicker(
+                    selection: $selectedSortOption,
+                    options: SortOption.allCases,
+                    color: .purple
+                ) {
                     applyFilters()
                 }
             }
         }
         .padding()
-        .background(Color.white.opacity(0.1))
-        .cornerRadius(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Theme.accentColor.opacity(0.2), lineWidth: 1)
+                )
+        )
         .padding(.horizontal)
     }
     
     private var resultsView: some View {
         VStack {
             HStack {
-                Text("\(filteredScholarships.count) scholarships found")
-                    .font(.headline)
-                    .foregroundColor(.white)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(filteredScholarships.count) scholarships found")
+                        .font(.headline.bold())
+                        .foregroundColor(.white)
+                    
+                    Text("Based on your filters")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                }
                 
                 Spacer()
                 
@@ -353,53 +644,91 @@ struct SmartFiltersView: View {
                     Button("Clear All") {
                         clearAllFilters()
                     }
+                    .font(.caption.bold())
                     .foregroundColor(Theme.accentColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Theme.accentColor.opacity(0.2))
+                    )
                 }
             }
             .padding(.horizontal)
             
             if filteredScholarships.isEmpty {
-                emptyStateView
+                enhancedEmptyStateView
             } else {
-                scholarshipListView
+                enhancedScholarshipListView
             }
         }
     }
     
-    private var emptyStateView: some View {
-        VStack(spacing: 20) {
+    private var enhancedEmptyStateView: some View {
+        VStack(spacing: 24) {
             Spacer()
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 60))
-                .foregroundColor(Theme.accentColor.opacity(0.7))
             
-            Text("No scholarships match your criteria")
-                .font(.title3.bold())
-                .foregroundColor(.white)
-            
-            Text("Try adjusting your filters or search terms")
-                .font(.body)
-                .foregroundColor(.white.opacity(0.7))
-                .multilineTextAlignment(.center)
-            
-            Button("Clear Filters") {
-                clearAllFilters()
+            // Animated empty state
+            VStack(spacing: 16) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 60))
+                    .foregroundColor(Theme.accentColor.opacity(0.7))
+                    .scaleEffect(animateStars ? 1.1 : 1.0)
+                    .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: animateStars)
+                
+                VStack(spacing: 8) {
+                    Text("No scholarships match your criteria")
+                        .font(.title3.bold())
+                        .foregroundColor(.white)
+                    
+                    Text("Try adjusting your filters or search terms to find more opportunities")
+                        .font(.body)
+                        .foregroundColor(.white.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                }
             }
-            .foregroundColor(.white)
-            .padding()
-            .background(Theme.accentColor.opacity(0.3))
-            .cornerRadius(12)
+            
+            VStack(spacing: 12) {
+                Button("Clear Filters") {
+                    clearAllFilters()
+                }
+                .font(.body.bold())
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Theme.accentColor.opacity(0.3))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Theme.accentColor.opacity(0.5), lineWidth: 1)
+                        )
+                )
+                
+                Button("Browse All") {
+                    clearAllFilters()
+                }
+                .font(.body)
+                .foregroundColor(Theme.accentColor)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Theme.accentColor.opacity(0.5), lineWidth: 1)
+                )
+            }
             
             Spacer()
         }
         .padding()
     }
     
-    private var scholarshipListView: some View {
+    private var enhancedScholarshipListView: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
                 ForEach(filteredScholarships) { scholarship in
-                    SmartFilterScholarshipCard(scholarship: scholarship)
+                    EnhancedSmartFilterScholarshipCard(scholarship: scholarship)
+                        .transition(.opacity.combined(with: .scale))
                 }
             }
             .padding()
@@ -591,6 +920,455 @@ struct SmartFiltersView: View {
         applyFilters()
     }
 }
+
+// MARK: - Enhanced Components
+
+struct EnhancedQuickFilterButton: View {
+    let title: String
+    let icon: String
+    let isActive: Bool
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption.bold())
+                Text(title)
+                    .font(.caption.bold())
+            }
+            .foregroundColor(isActive ? .white : .white.opacity(0.8))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(isActive ? color : Color.white.opacity(0.2))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(isActive ? color.opacity(0.5) : Color.clear, lineWidth: 1)
+                    )
+            )
+            .scaleEffect(isActive ? 1.05 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isActive)
+        }
+    }
+}
+
+struct EnhancedFilterChip: View {
+    let title: String
+    let isSelected: Bool
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.caption.bold())
+                .foregroundColor(isSelected ? .white : .white.opacity(0.8))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isSelected ? color : Color.white.opacity(0.2))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(isSelected ? color.opacity(0.5) : Color.clear, lineWidth: 1)
+                        )
+                )
+                .scaleEffect(isSelected ? 1.05 : 1.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+        }
+    }
+}
+
+struct EnhancedFilterSection<Content: View>: View {
+    let title: String
+    let icon: String
+    let content: Content
+    
+    init(title: String, icon: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.icon = icon
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundColor(Theme.accentColor)
+                    .font(.title3)
+                
+                Text(title)
+                    .font(.headline.bold())
+                    .foregroundColor(.white)
+            }
+            
+            content
+        }
+    }
+}
+
+struct EnhancedSegmentedPicker<T: Hashable>: View {
+    @Binding var selection: T
+    let options: [T]
+    let color: Color
+    let onChange: () -> Void
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(options, id: \.self) { option in
+                    Button(action: {
+                        selection = option
+                        onChange()
+                    }) {
+                        Text(String(describing: option))
+                            .font(.caption.bold())
+                            .foregroundColor(selection == option ? .white : .white.opacity(0.8))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(selection == option ? color : Color.white.opacity(0.2))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(selection == option ? color.opacity(0.5) : Color.clear, lineWidth: 1)
+                                    )
+                            )
+                            .scaleEffect(selection == option ? 1.05 : 1.0)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selection)
+                    }
+                }
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+}
+
+struct RangeSlider: View {
+    @Binding var minValue: Double
+    @Binding var maxValue: Double
+    let bounds: ClosedRange<Double>
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                // Track
+                Rectangle()
+                    .fill(Color.white.opacity(0.3))
+                    .frame(height: 4)
+                    .cornerRadius(2)
+                
+                // Selected range
+                Rectangle()
+                    .fill(Theme.accentColor)
+                    .frame(width: CGFloat((maxValue - minValue) / (bounds.upperBound - bounds.lowerBound)) * geometry.size.width,
+                           height: 4)
+                    .offset(x: CGFloat((minValue - bounds.lowerBound) / (bounds.upperBound - bounds.lowerBound)) * geometry.size.width)
+                    .cornerRadius(2)
+                
+                // Min thumb
+                Circle()
+                    .fill(Theme.accentColor)
+                    .frame(width: 20, height: 20)
+                    .offset(x: CGFloat((minValue - bounds.lowerBound) / (bounds.upperBound - bounds.lowerBound)) * geometry.size.width - 10)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                let newValue = bounds.lowerBound + Double(value.location.x / geometry.size.width) * (bounds.upperBound - bounds.lowerBound)
+                                minValue = max(bounds.lowerBound, min(newValue, maxValue))
+                            }
+                    )
+                
+                // Max thumb
+                Circle()
+                    .fill(Theme.accentColor)
+                    .frame(width: 20, height: 20)
+                    .offset(x: CGFloat((maxValue - bounds.lowerBound) / (bounds.upperBound - bounds.lowerBound)) * geometry.size.width - 10)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                let newValue = bounds.lowerBound + Double(value.location.x / geometry.size.width) * (bounds.upperBound - bounds.lowerBound)
+                                maxValue = max(minValue, min(newValue, bounds.upperBound))
+                            }
+                    )
+            }
+        }
+        .frame(height: 20)
+    }
+}
+
+struct EnhancedSmartFilterScholarshipCard: View {
+    let scholarship: Scholarship
+    @EnvironmentObject private var viewModel: AppViewModel
+    @State private var isExpanded = false
+    @State private var isSaved = false
+    @State private var animateCard = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Header
+            HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(scholarship.name)
+                        .font(.headline.bold())
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                    
+                    HStack(spacing: 8) {
+                        Text(scholarship.category.rawValue.capitalized)
+                            .font(.caption.bold())
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Theme.accentColor.opacity(0.3))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Theme.accentColor.opacity(0.5), lineWidth: 1)
+                                    )
+                            )
+                        
+                        // Effort badge
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.caption2)
+                                .foregroundColor(Theme.accentColor)
+                            Text("\(calculateEffortLevel())/5")
+                                .font(.caption2.bold())
+                                .foregroundColor(.white)
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.2))
+                        )
+                    }
+                }
+                
+                Spacer()
+                
+                Button(action: {
+                    withAnimation(.spring()) {
+                        isSaved.toggle()
+                        if isSaved {
+                            viewModel.saveScholarship(scholarship)
+                        } else {
+                            viewModel.removeSavedScholarship(scholarship)
+                        }
+                    }
+                }) {
+                    Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
+                        .foregroundColor(isSaved ? Theme.accentColor : .white.opacity(0.7))
+                        .font(.title3)
+                        .scaleEffect(isSaved ? 1.2 : 1.0)
+                        .animation(.spring(), value: isSaved)
+                }
+            }
+            
+            // Amount and deadline
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("$\(Int(scholarship.amount))")
+                        .font(.title2.bold())
+                        .foregroundColor(Theme.accentColor)
+                    
+                    Text("Award Amount")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(scholarship.deadline, style: .date)
+                        .font(.caption.bold())
+                        .foregroundColor(deadlineColor)
+                    
+                    Text(deadlineStatus)
+                        .font(.caption2)
+                        .foregroundColor(deadlineColor)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule()
+                                .fill(deadlineColor.opacity(0.2))
+                        )
+                }
+            }
+            
+            // Description
+            Text(scholarship.description)
+                .font(.body)
+                .foregroundColor(.white.opacity(0.8))
+                .lineLimit(isExpanded ? nil : 2)
+            
+            // Requirements preview
+            if !scholarship.requirements.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Requirements:")
+                            .font(.caption.bold())
+                            .foregroundColor(.white.opacity(0.7))
+                        
+                        Spacer()
+                        
+                        Text("\(scholarship.requirements.count) items")
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    
+                    LazyVStack(alignment: .leading, spacing: 4) {
+                        ForEach(Array(scholarship.requirements.prefix(isExpanded ? scholarship.requirements.count : 2)), id: \.self) { requirement in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.caption)
+                                    .foregroundColor(Theme.accentColor)
+                                
+                                Text(requirement)
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.8))
+                                    .lineLimit(2)
+                            }
+                        }
+                    }
+                    
+                    if scholarship.requirements.count > 2 {
+                        Button(action: {
+                            withAnimation(.spring()) {
+                                isExpanded.toggle()
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                Text(isExpanded ? "Show Less" : "Show \(scholarship.requirements.count - 2) More")
+                                    .font(.caption.bold())
+                                    .foregroundColor(Theme.accentColor)
+                                
+                                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(Theme.accentColor)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Action buttons
+            HStack(spacing: 12) {
+                Button(action: {
+                    // Apply action
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "paperplane.fill")
+                            .font(.caption)
+                        Text("Apply Now")
+                            .font(.caption.bold())
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Theme.accentColor)
+                    )
+                }
+                
+                Button(action: {
+                    // Share action
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.caption)
+                        Text("Share")
+                            .font(.caption.bold())
+                    }
+                    .foregroundColor(Theme.accentColor)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Theme.accentColor.opacity(0.5), lineWidth: 1)
+                    )
+                }
+                
+                Spacer()
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Theme.accentColor.opacity(0.2), lineWidth: 1)
+                )
+        )
+        .scaleEffect(animateCard ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 0.3), value: animateCard)
+        .onAppear {
+            isSaved = viewModel.savedScholarships.contains { $0.id == scholarship.id }
+            
+            withAnimation(.easeInOut(duration: 0.3).delay(0.1)) {
+                animateCard = true
+            }
+        }
+    }
+    
+    private func calculateEffortLevel() -> Int {
+        var score = 1 // Base level
+        
+        if scholarship.requirements.contains(where: { $0.localizedCaseInsensitiveContains("essay") }) {
+            score += 1
+        }
+        if scholarship.requirements.contains(where: { $0.localizedCaseInsensitiveContains("portfolio") }) {
+            score += 1
+        }
+        if scholarship.requirements.contains(where: { $0.localizedCaseInsensitiveContains("interview") }) {
+            score += 1
+        }
+        if scholarship.requirements.contains(where: { $0.localizedCaseInsensitiveContains("video") }) {
+            score += 1
+        }
+        
+        return min(score, 5)
+    }
+    
+    private var deadlineColor: Color {
+        let calendar = Calendar.current
+        let now = Date()
+        let endOfMonth = calendar.dateInterval(of: .month, for: now)?.end ?? now
+        let deadline = scholarship.deadline
+        
+        if deadline <= endOfMonth && deadline > now {
+            return Theme.accentColor
+        } else if deadline <= now {
+            return .red
+        } else {
+            return .green
+        }
+    }
+    
+    private var deadlineStatus: String {
+        let calendar = Calendar.current
+        let now = Date()
+        let endOfMonth = calendar.dateInterval(of: .month, for: now)?.end ?? now
+        let deadline = scholarship.deadline
+        
+        if deadline <= endOfMonth && deadline > now {
+            return "Due Soon"
+        } else if deadline <= now {
+            return "Past Due"
+        } else {
+            return "Upcoming"
+        }
+    }
+}
+
+// MARK: - Legacy Components (for backward compatibility)
 
 struct QuickFilterButton: View {
     let title: String
@@ -850,4 +1628,50 @@ struct SmartFilterScholarshipCard: View {
 #Preview {
     SmartFiltersView()
         .environmentObject(AppViewModel())
+}
+
+// MARK: - Helper Components
+
+struct StatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    @State private var animateCard = false
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption)
+                    .foregroundColor(color)
+                
+                Text(title)
+                    .font(.caption.bold())
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            
+            Text(value)
+                .font(.title2.bold())
+                .foregroundColor(.white)
+                .scaleEffect(animateCard ? 1.1 : 1.0)
+                .animation(.easeInOut(duration: 0.3), value: animateCard)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(color.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.3).delay(0.2)) {
+                animateCard = true
+            }
+        }
+    }
 } 

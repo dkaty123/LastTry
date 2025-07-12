@@ -58,7 +58,7 @@ struct ScholarshipCardView: View {
             
             // Description with fade-in effect
             HStack(alignment: .top, spacing: 12) {
-                Image(categoryCatImageName(for: scholarship.category))
+                Image(randomCatImageName())
                     .resizable()
                     .frame(width: 44, height: 44)
                     .clipShape(Circle())
@@ -270,14 +270,13 @@ struct ScholarshipCardView: View {
     }
     
     // Helper function to map category to cat image asset name
-    private func categoryCatImageName(for category: Scholarship.ScholarshipCategory) -> String {
-        switch category {
-        case .stem: return "stem"
-        case .arts: return "art"
-        case .humanities: return "human"
-        case .business: return "business"
-        case .general: return "general"
-        }
+    private func randomCatImageName() -> String {
+        let catNames = [
+            "stem", "art", "human", "business", "general",
+            "cat1", "cat2", "cat3", "cat4", "cat5", "cat6", "cat7", "cat8", "cat9", "cat10",
+            "clearIcon", "clearIcon2", "clearIcon3", "clearIcon4", "clearIcon5", "clearIcon6", "clearIcon7", "clearIcon8", "clearIcon9", "clearIcon10", "clearIcon11", "clearIcon12", "clearIcon13", "clearIcon14", "clearIcon15"
+        ]
+        return catNames.randomElement() ?? "cat1"
     }
 }
 

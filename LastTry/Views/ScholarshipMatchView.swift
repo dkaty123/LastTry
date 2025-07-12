@@ -1,10 +1,10 @@
 import SwiftUI
 
-struct ScholarshipMatchView: View {
+struct OpportunityMatchView: View {
     @EnvironmentObject private var viewModel: AppViewModel
     @State private var showMascot = false
-    @State private var perfectMatchScholarship: Scholarship?
-    @State private var dismissedScholarships: Set<UUID> = []
+    @State private var perfectMatchOpportunity: Opportunity?
+    @State private var dismissedOpportunities: Set<UUID> = []
     @StateObject private var motion = SplashMotionManager()
     
     var body: some View {
@@ -16,14 +16,14 @@ struct ScholarshipMatchView: View {
             mascotView
         }
         .onAppear {
-            viewModel.updateMatchedScholarships()
+            viewModel.updateMatchedOpportunities()
         }
     }
     
     private var contentView: some View {
         VStack(spacing: 0) {
             titleView
-            scholarshipListView
+            opportunityListView
         }
     }
     
@@ -36,7 +36,7 @@ struct ScholarshipMatchView: View {
                 .shadow(color: Theme.accentColor.opacity(0.5), radius: 8, x: 0, y: 2)
             
             if let profile = viewModel.userProfile {
-                Text("Personalized scholarships for \(profile.name)")
+                Text("Personalized opportunities for \(profile.name)")
                     .font(.headline)
                     .foregroundColor(.white.opacity(0.8))
                     .padding(.bottom, 8)
@@ -44,14 +44,14 @@ struct ScholarshipMatchView: View {
         }
     }
     
-    private var scholarshipListView: some View {
-        let visibleScholarships = viewModel.matchedScholarships.filter { !dismissedScholarships.contains($0.id) }
+    private var opportunityListView: some View {
+        let visibleOpportunities = viewModel.matchedOpportunities.filter { !dismissedOpportunities.contains($0.id) }
         
         return Group {
-            if visibleScholarships.isEmpty {
+            if visibleOpportunities.isEmpty {
                 emptyStateView
             } else {
-                scholarshipScrollView(visibleScholarships: visibleScholarships)
+                opportunityScrollView(visibleOpportunities: visibleOpportunities)
             }
         }
     }
@@ -73,11 +73,11 @@ struct ScholarshipMatchView: View {
         }
     }
     
-    private func scholarshipScrollView(visibleScholarships: [Scholarship]) -> some View {
+    private func opportunityScrollView(visibleOpportunities: [Opportunity]) -> some View {
         ScrollView {
             LazyVStack(spacing: 20) {
-                ForEach(visibleScholarships) { scholarship in
-                    scholarshipCard(scholarship: scholarship)
+                ForEach(visibleOpportunities) { opportunity in
+                    opportunityCard(opportunity: opportunity)
                 }
             }
             .padding(.horizontal)
@@ -85,26 +85,17 @@ struct ScholarshipMatchView: View {
         }
     }
     
-    private func scholarshipCard(scholarship: Scholarship) -> some View {
-        CosmicMatchCardView(
-            scholarship: scholarship,
-            isSaved: viewModel.savedScholarships.contains { $0.id == scholarship.id },
-            onSave: {
-                viewModel.saveScholarship(scholarship)
-            },
-            onUnsave: {
-                viewModel.removeSavedScholarship(scholarship)
-            },
-            onDismiss: {
-                dismissedScholarships.insert(scholarship.id)
-            }
+    private func opportunityCard(opportunity: Opportunity) -> some View {
+        OpportunityCardView(
+            opportunity: opportunity,
+            swipeDirection: nil
         )
         .background(
             GeometryReader { geo in
                 Color.clear
                     .onAppear {
-                        if isPerfectMatch(scholarship: scholarship) {
-                            perfectMatchScholarship = scholarship
+                        if isPerfectMatch(opportunity: opportunity) {
+                            perfectMatchOpportunity = opportunity
                             showMascot = true
                         }
                     }
@@ -114,15 +105,15 @@ struct ScholarshipMatchView: View {
     
     private var mascotView: some View {
         Group {
-            if showMascot, let scholarship = perfectMatchScholarship {
+            if showMascot, let opportunity = perfectMatchOpportunity {
                 VStack {
                     Spacer()
-                    CuteMascotView(message: "Cosmic Match! \(scholarship.name)")
+                    CuteMascotView(message: "Cosmic Match! \(opportunity.title)")
                         .padding(.bottom, 40)
                         .onAppear {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                                 showMascot = false
-                                perfectMatchScholarship = nil
+                                perfectMatchOpportunity = nil
                             }
                         }
                 }
@@ -131,8 +122,8 @@ struct ScholarshipMatchView: View {
         }
     }
     
-    private func isPerfectMatch(scholarship: Scholarship) -> Bool {
-        return viewModel.matchedScholarships.first == scholarship && !viewModel.matchedScholarships.isEmpty
+    private func isPerfectMatch(opportunity: Opportunity) -> Bool {
+        return viewModel.matchedOpportunities.first == opportunity && !viewModel.matchedOpportunities.isEmpty
     }
 }
 
@@ -223,13 +214,21 @@ struct CosmicMatchCardView: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovered)
             
             // Description
-            Text(scholarship.description)
-                .font(.body)
-                .foregroundColor(.white.opacity(0.8))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .opacity(isAnimating ? 1 : 0)
-                .offset(y: isAnimating ? 0 : 20)
+            HStack(alignment: .top, spacing: 12) {
+                Image(categoryCatImageName(for: scholarship.category))
+                    .resizable()
+                    .frame(width: 44, height: 44)
+                    .clipShape(Circle())
+                    .shadow(radius: 4)
+                
+                Text(scholarship.description)
+                    .font(.body)
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.leading)
+            }
+            .padding(.horizontal)
+            .opacity(isAnimating ? 1 : 0)
+            .offset(y: isAnimating ? 0 : 20)
             
             if isExpanded {
                 // Requirements
@@ -357,9 +356,20 @@ struct CosmicMatchCardView: View {
                 .opacity(showConfetti ? 1 : 0)
         )
     }
+    
+    // Helper function to map category to cat image asset name
+    private func categoryCatImageName(for category: Scholarship.ScholarshipCategory) -> String {
+        switch category {
+        case .stem: return "stem"
+        case .arts: return "art"
+        case .humanities: return "human"
+        case .business: return "business"
+        case .general: return "general"
+        }
+    }
 }
 
 #Preview {
-    ScholarshipMatchView()
+    OpportunityMatchView()
         .environmentObject(AppViewModel())
 } 
