@@ -2780,6 +2780,921 @@ struct ScholarshipData {
                        requirements: ["High school/post-secondary student", "Essay submission"]),
         ])
         
+        // Latest scholarship dates (updated to 2026 for passed deadlines)
+        let rbcFutureLaunchDate = dateFormatter.date(from: "December 11, 2026")!
+        let cnoocDate = dateFormatter.date(from: "August 14, 2026")!
+        let flight302Date = dateFormatter.date(from: "July 9, 2026")!
+        let rbcGreenSkillsDate = dateFormatter.date(from: "June 30, 2026")!
+        let singleMothersDate = dateFormatter.date(from: "June 30, 2026")!
+        let ironOreIndigenousDate = dateFormatter.date(from: "June 26, 2026")!
+        let jamFilledDate = dateFormatter.date(from: "June 14, 2026")!
+        let mediaTechDate = dateFormatter.date(from: "June 4, 2026")!
+        let cdHoweDate = dateFormatter.date(from: "June 4, 2026")!
+        let omniTvDate = dateFormatter.date(from: "May 26, 2026")!
+        let mattinsonDate = dateFormatter.date(from: "April 30, 2026")!
+        let shishalhDate = dateFormatter.date(from: "April 30, 2026")!
+        let policeFederationDate = dateFormatter.date(from: "April 30, 2026")!
+        let bayerCropDate = dateFormatter.date(from: "April 30, 2026")!
+        let taraAgrawalDate = dateFormatter.date(from: "April 30, 2026")!
+        let olympiasGiftDate = dateFormatter.date(from: "April 30, 2026")!
+        let schmeelkDate = dateFormatter.date(from: "April 30, 2026")!
+       // let g3GrowBeyondDate = dateFormatter.date(from: "April 9, 2026")!
+        let merckIndigenousDate = dateFormatter.date(from: "April 3, 2026")!
+
+        // New scholarship dates for additional scholarships
+        let tdCanadaTrustDate = dateFormatter.date(from: "November 15, 2025")!
+        let vanierDate = dateFormatter.date(from: "November 6, 2025")!
+        let ogsDate = dateFormatter.date(from: "October 15, 2025")!
+        let albertaStudentAidDate = dateFormatter.date(from: "March 31, 2025")!
+        let canadianFederationDate = dateFormatter.date(from: "July 14, 2025")!
+        let electroFederationDate = dateFormatter.date(from: "June 9, 2025")!
+        let retailCouncilDate = dateFormatter.date(from: "March 28, 2025")!
+        let westernUniversityDate = dateFormatter.date(from: "February 1, 2025")!
+        let canadasLuckiestDate = dateFormatter.date(from: "May 31, 2025")!
+        let cmaNxtDate = dateFormatter.date(from: "December 31, 2025")!
+        
+        // Additional scholarship dates for new opportunities
+        let engineersCanadaDate = dateFormatter.date(from: "September 15, 2025")!
+        let lambdaFoundationDate = dateFormatter.date(from: "March 31, 2025")!
+        let ibetPhDDate = dateFormatter.date(from: "January 15, 2025")!
+        let holmesFoundationDate = dateFormatter.date(from: "June 30, 2025")!
+        let williamMuirEdwardsDate = dateFormatter.date(from: "March 15, 2025")!
+        let waterlooVahlenkampDate = dateFormatter.date(from: "July 15, 2025")!
+        let cofiForestDate = dateFormatter.date(from: "June 27, 2025")!
+        let navCanadaDate = dateFormatter.date(from: "October 31, 2025")!
+        let waterlooInternationalDate = dateFormatter.date(from: "February 14, 2025")!
+        let flightPS752Date = dateFormatter.date(from: "May 1, 2025")!
+        let canadaChinaDate = dateFormatter.date(from: "May 20, 2025")!
+        
+        // Additional scholarship dates for university and institutional awards
+        let torontoMetropolitanDate = dateFormatter.date(from: "December 1, 2025")!
+        let mohawkCollegeDate = dateFormatter.date(from: "August 1, 2025")!
+        let cstFoundationDate = dateFormatter.date(from: "March 10, 2025")!
+        let canadianBeefDate = dateFormatter.date(from: "June 30, 2025")!
+        let pipscLegacyDate = dateFormatter.date(from: "June 2, 2025")!
+        let royalCanadianLegionDate = dateFormatter.date(from: "July 31, 2025")!
+        let westlandFoundationDate = dateFormatter.date(from: "July 31, 2025")!
+
+        // Add latest scholarships
+        scholarships.append(contentsOf: [
+            Scholarship(name: "RBC Future Launch Scholarship",
+                       amount: 10000,
+                       deadline: rbcFutureLaunchDate,
+                       description: "Supporting the next generation of Canadian leaders and innovators.",
+                       category: .general,
+                       requirements: ["Canadian citizen/PR", "High school senior", "Leadership potential", "Community involvement"]),
+            
+            Scholarship(name: "CNOOC International Scholarship - Bill Woodward School",
+                       amount: 5000,
+                       deadline: cnoocDate,
+                       description: "For students pursuing careers in the energy and petroleum industry.",
+                       category: .stem,
+                       requirements: ["Canadian citizen/PR", "Energy/petroleum field of study", "Academic excellence"]),
+            
+            Scholarship(name: "belairdirect Scholarship",
+                       amount: 2000,
+                       deadline: belairdirectDate,
+                       description: "Supporting Canadian students pursuing higher education and community involvement.",
+                       category: .general,
+                       requirements: ["Canadian citizen/PR", "Post-secondary enrollment", "Community service"]),
+            
+            Scholarship(name: "Flight 302 Legacy Award",
+                       amount: 5000,
+                       deadline: flight302Date,
+                       description: "Honoring the memory of Flight 302 victims by supporting aviation and transportation safety education.",
+                       category: .stem,
+                       requirements: ["Canadian citizen/PR", "Aviation/transportation safety field", "Academic achievement"]),
+            
+            Scholarship(name: "RBC Green Skills Scholarship",
+                       amount: 8000,
+                       deadline: rbcGreenSkillsDate,
+                       description: "Supporting students developing skills for a sustainable and green economy.",
+                       category: .stem,
+                       requirements: ["Canadian citizen/PR", "Environmental/sustainability focus", "Green skills development"]),
+            
+            Scholarship(name: "Single Mothers Support Fund",
+                       amount: 3000,
+                       deadline: singleMothersDate,
+                       description: "Empowering single mothers to pursue their educational dreams and career goals.",
+                       category: .general,
+                       requirements: ["Single mother", "Canadian citizen/PR", "Post-secondary enrollment", "Financial need"]),
+            
+            Scholarship(name: "Iron Ore Company Scholarship for Indigenous Students",
+                       amount: 4000,
+                       deadline: ironOreIndigenousDate,
+                       description: "Supporting Indigenous students pursuing education in mining, engineering, and related fields.",
+                       category: .stem,
+                       requirements: ["Indigenous student", "Mining/engineering field", "Canadian citizen/PR"]),
+            
+            Scholarship(name: "Jam Filled Diversity in Animation Scholarship",
+                       amount: 2500,
+                       deadline: jamFilledDate,
+                       description: "Promoting diversity and inclusion in the animation industry through educational support.",
+                       category: .arts,
+                       requirements: ["Animation/arts program", "Diverse background", "Portfolio submission"]),
+            
+            Scholarship(name: "Media Technology and Innovation Scholarship",
+                       amount: 1500,
+                       deadline: mediaTechDate,
+                       description: "Supporting innovation in media technology and digital communications.",
+                       category: .stem,
+                       requirements: ["Media technology field", "Innovation focus", "Canadian citizen/PR"]),
+            
+            Scholarship(name: "C.D. Howe Scholarship Endowment Fund Thunder Bay / Port Arthur Scholarship",
+                       amount: 3000,
+                       deadline: cdHoweDate,
+                       description: "Supporting students from Thunder Bay and Port Arthur regions pursuing higher education.",
+                       category: .general,
+                       requirements: ["Thunder Bay/Port Arthur resident", "Canadian citizen/PR", "Academic achievement"]),
+            
+            Scholarship(name: "OMNI TV Scholarship",
+                       amount: 2000,
+                       deadline: omniTvDate,
+                       description: "Supporting students in broadcasting, journalism, and media communications.",
+                       category: .humanities,
+                       requirements: ["Broadcasting/journalism field", "Canadian citizen/PR", "Academic excellence"]),
+            
+            Scholarship(name: "Mattinson Scholarship Program for Students with Disabilities",
+                       amount: 2500,
+                       deadline: mattinsonDate,
+                       description: "Empowering students with disabilities to achieve their educational and career goals.",
+                       category: .general,
+                       requirements: ["Documented disability", "Canadian citizen/PR", "Post-secondary enrollment"]),
+            
+            Scholarship(name: "shíshálh Nation Scholarship",
+                       amount: 1500,
+                       deadline: shishalhDate,
+                       description: "Supporting shíshálh Nation members pursuing post-secondary education.",
+                       category: .general,
+                       requirements: ["shíshálh Nation member", "Post-secondary enrollment", "Academic achievement"]),
+            
+            Scholarship(name: "National Police Federation Benevolent Foundation Public Bursary Program",
+                       amount: 2000,
+                       deadline: policeFederationDate,
+                       description: "Supporting families of police officers and those pursuing careers in public safety.",
+                       category: .general,
+                       requirements: ["Police family member or public safety career", "Canadian citizen/PR", "Post-secondary enrollment"]),
+            
+            Scholarship(name: "Bayer Crop Science Opportunity Scholarship",
+                       amount: 3000,
+                       deadline: bayerCropDate,
+                       description: "Supporting students in agricultural sciences, crop management, and sustainable farming.",
+                       category: .stem,
+                       requirements: ["Agricultural sciences field", "Canadian citizen/PR", "Academic excellence"]),
+            
+            Scholarship(name: "Tara Agrawal Financial Planning Scholarship",
+                       amount: 2000,
+                       deadline: taraAgrawalDate,
+                       description: "Supporting students pursuing careers in financial planning and wealth management.",
+                       category: .business,
+                       requirements: ["Financial planning field", "Canadian citizen/PR", "Academic achievement"]),
+            
+            Scholarship(name: "Olympia's Gift Scholarship Fund",
+                       amount: 1500,
+                       deadline: olympiasGiftDate,
+                       description: "Supporting students who demonstrate resilience and determination in pursuing their educational goals.",
+                       category: .general,
+                       requirements: ["Canadian citizen/PR", "Post-secondary enrollment", "Resilience demonstration"]),
+            
+            Scholarship(name: "Richard J. Schmeelk Canada Fellowship",
+                       amount: 5000,
+                       deadline: schmeelkDate,
+                       description: "Supporting Canadian students with exceptional academic achievement and leadership potential.",
+                       category: .general,
+                       requirements: ["Canadian citizen/PR", "Exceptional academics", "Leadership potential"]),
+            
+            Scholarship(name: "G3 Grow Beyond Scholarship",
+                       amount: 4000,
+                       deadline: g3GrowBeyondDate,
+                       description: "Supporting students addressing global challenges through agricultural innovation and sustainability.",
+                       category: .stem,
+                       requirements: ["Agricultural innovation focus", "Canadian citizen/PR", "Global challenge solution"]),
+            
+            Scholarship(name: "Merck Canada Indigenous Student Scholarship",
+                       amount: 3000,
+                       deadline: merckIndigenousDate,
+                       description: "Supporting Indigenous students pursuing careers in healthcare, pharmaceuticals, and life sciences.",
+                       category: .stem,
+                       requirements: ["Indigenous student", "Healthcare/pharmaceuticals field", "Canadian citizen/PR"]),
+            
+            // Additional National & Major Scholarships
+            Scholarship(name: "TD Canada Trust Scholarship for Community Leadership",
+                       amount: 70000,
+                       deadline: tdCanadaTrustDate,
+                       description: "Prestigious award for community-driven high school/CEGEP students demonstrating exceptional leadership.",
+                       category: .general,
+                       requirements: ["High school/CEGEP student", "Community leadership", "Canadian citizen/PR", "Strong academic record"]),
+            
+            Scholarship(name: "Vanier Canada Graduate Scholarships",
+                       amount: 150000,
+                       deadline: vanierDate,
+                       description: "Prestigious doctoral scholarship supporting world-class doctoral students in Canada.",
+                       category: .general,
+                       requirements: ["PhD student", "Canadian citizen/PR", "Exceptional academic achievement", "Research leadership"]),
+            
+            Scholarship(name: "Ontario Graduate Scholarship (OGS)",
+                       amount: 15000,
+                       deadline: ogsDate,
+                       description: "Merit-based scholarship for master's or PhD students studying in Ontario.",
+                       category: .general,
+                       requirements: ["Master's or PhD student", "Ontario university enrollment", "Academic excellence", "Canadian citizen/PR"]),
+            
+            // Provincial & Specialized Awards
+            Scholarship(name: "Alberta Student Aid Public Law Scholarship",
+                       amount: 10000,
+                       deadline: albertaStudentAidDate,
+                       description: "Supporting Alberta-based law students pursuing careers in public law.",
+                       category: .humanities,
+                       requirements: ["Alberta resident", "Law student", "Public law focus", "Canadian citizen/PR"]),
+            
+            // Private, Corporate & Community Scholarships
+            Scholarship(name: "Canadian Federation of Independent Grocers Scholarship",
+                       amount: 15000,
+                       deadline: canadianFederationDate,
+                       description: "Supporting students in the grocery and retail industry with substantial financial awards.",
+                       category: .business,
+                       requirements: ["Grocery/retail industry connection", "Canadian citizen/PR", "Post-secondary enrollment", "Academic achievement"]),
+            
+            Scholarship(name: "Electro-Federation Canada Scholarships",
+                       amount: 3500,
+                       deadline: electroFederationDate,
+                       description: "Supporting Indigenous and general students planning technical studies in electrical and electronics fields.",
+                       category: .stem,
+                       requirements: ["Technical studies focus", "Canadian citizen/PR", "Academic excellence", "Indigenous students encouraged"]),
+            
+            Scholarship(name: "Retail Council of Canada Education Scholarship",
+                       amount: 55000,
+                       deadline: retailCouncilDate,
+                       description: "Comprehensive scholarship program including mentorship and networking opportunities in retail.",
+                       category: .business,
+                       requirements: ["Retail industry interest", "Canadian citizen/PR", "Leadership potential", "Academic achievement"]),
+            
+            // University Entrance & Institutional Awards
+            Scholarship(name: "Western University Admission Scholarship",
+                       amount: 10000,
+                       deadline: westernUniversityDate,
+                       description: "Guaranteed scholarship for incoming undergraduate students at Western University.",
+                       category: .general,
+                       requirements: ["Western University admission", "High academic average", "Canadian citizen/PR", "Full-time enrollment"]),
+            
+            // Essay & Contest-Based Awards
+            Scholarship(name: "Canada's Luckiest Student",
+                       amount: 50000,
+                       deadline: canadasLuckiestDate,
+                       description: "One-time major award for Canadian students through a unique contest format.",
+                       category: .general,
+                       requirements: ["Canadian citizen/PR", "Post-secondary enrollment", "Contest participation", "No age restrictions"]),
+            
+            // Other Scholarships Worth Exploring
+            Scholarship(name: "CMA NXT Opportunity Award",
+                       amount: 250,
+                       deadline: cmaNxtDate,
+                       description: "Small incentive award from Certified Management Accountants for joining their program.",
+                       category: .business,
+                       requirements: ["CMA NXT program participation", "Canadian citizen/PR", "Business/accounting interest"]),
+            
+            // General & Inclusive Awards
+            Scholarship(name: "Engineers Canada Leadership Scholarship",
+                       amount: 4000,
+                       deadline: engineersCanadaDate,
+                       description: "Leadership awards for returning undergraduate students in CEAB-accredited engineering programs.",
+                       category: .stem,
+                       requirements: ["CEAB-accredited engineering program", "Returning undergraduate", "Leadership demonstration", "Indigenous and regional representation encouraged"]),
+            
+            Scholarship(name: "Lambda Foundation Scholarships",
+                       amount: 5000,
+                       deadline: lambdaFoundationDate,
+                       description: "National university awards supporting 2SLGBTQ+ studies and research at major Canadian institutions.",
+                       category: .humanities,
+                       requirements: ["2SLGBTQ+ studies focus", "Canadian university enrollment", "Research proposal", "Academic excellence"]),
+            
+            Scholarship(name: "IBET PhD Momentum Fellowships",
+                       amount: 120000,
+                       deadline: ibetPhDDate,
+                       description: "Four-year fellowship program for incoming Black and Indigenous doctoral students in engineering.",
+                       category: .stem,
+                       requirements: ["Black or Indigenous student", "PhD engineering program", "Canadian citizen/PR", "Exceptional academic record"]),
+            
+            // Skilled Trades & Vocational
+            Scholarship(name: "Holmes Foundation Bursaries",
+                       amount: 1500,
+                       deadline: holmesFoundationDate,
+                       description: "Supporting students in residential construction or trades programs across Canada.",
+                       category: .stem,
+                       requirements: ["Residential construction/trades program", "Canadian citizen/PR", "Academic achievement", "Financial need"]),
+            
+            // Field-Specific Awards
+            Scholarship(name: "William Muir Edwards Citizenship Award",
+                       amount: 10000,
+                       deadline: williamMuirEdwardsDate,
+                       description: "Outstanding citizenship award for engineering undergraduates at University of Alberta.",
+                       category: .stem,
+                       requirements: ["UAlberta engineering student", "Outstanding citizenship", "Community involvement", "Academic achievement"]),
+            
+            Scholarship(name: "Waterloo Vahlenkamp Memorial Engineering Scholarship",
+                       amount: 2000,
+                       deadline: waterlooVahlenkampDate,
+                       description: "Award for third-year engineering students with preference for women.",
+                       category: .stem,
+                       requirements: ["Third-year engineering student", "University of Waterloo", "Women encouraged to apply", "Academic excellence"]),
+            
+            Scholarship(name: "COFI Forest Education Scholarship",
+                       amount: 2000,
+                       deadline: cofiForestDate,
+                       description: "Ten awards for forestry-related studies in British Columbia.",
+                       category: .stem,
+                       requirements: ["Forestry-related studies", "British Columbia resident", "Canadian citizen/PR", "Academic achievement"]),
+            
+            // Regional & Employer-Based
+            Scholarship(name: "NAV CANADA Runway to Success Award",
+                       amount: 5000,
+                       deadline: navCanadaDate,
+                       description: "Scholarship supporting students in aviation and air traffic control fields.",
+                       category: .stem,
+                       requirements: ["Aviation/air traffic control field", "Canadian citizen/PR", "Academic excellence", "Industry interest"]),
+            
+            // Institutional & Entrance Awards
+            Scholarship(name: "Waterloo International Student Entrance Scholarships",
+                       amount: 80000,
+                       deadline: waterlooInternationalDate,
+                       description: "Comprehensive scholarship program for international students at University of Waterloo.",
+                       category: .general,
+                       requirements: ["International student", "University of Waterloo admission", "Science/engineering/math focus", "Exceptional academic record"]),
+            
+            // International & Prestigious Scholarships
+            Scholarship(name: "Flight PS752 Commemorative Scholarship",
+                       amount: 10000,
+                       deadline: flightPS752Date,
+                       description: "Supporting students and researchers affected by the Flight PS752 tragedy.",
+                       category: .general,
+                       requirements: ["Flight PS752 connection", "Canadian citizen/PR", "Academic excellence", "Research focus"]),
+            
+            Scholarship(name: "Canada-China Scholars' Exchange Program",
+                       amount: 50000,
+                       deadline: canadaChinaDate,
+                       description: "Fully funded research collaboration program between Canada and China.",
+                       category: .stem,
+                       requirements: ["Research collaboration focus", "Canadian citizen/PR", "China-Canada relations", "Academic excellence"]),
+            
+            // University & Institutional Scholarships
+            Scholarship(name: "Toronto Metropolitan University ISLA Entrance Scholarship",
+                       amount: 10000,
+                       deadline: torontoMetropolitanDate,
+                       description: "Entrance-only award for Winter 2026 entry with up to 20 recipients.",
+                       category: .general,
+                       requirements: ["TMU admission", "Winter 2026 entry", "Canadian citizen/PR", "Academic excellence"]),
+            
+            Scholarship(name: "Mohawk College Fall 2025 Awards & Bursaries",
+                       amount: 3000,
+                       deadline: mohawkCollegeDate,
+                       description: "Multiple scholarships for incoming students at Mohawk College.",
+                       category: .general,
+                       requirements: ["Mohawk College admission", "Fall 2025 entry", "Canadian citizen/PR", "Various criteria"]),
+            
+            // Industry & Professional Awards
+            Scholarship(name: "CST Foundation Bursaries",
+                       amount: 2000,
+                       deadline: cstFoundationDate,
+                       description: "Various education-support awards from Canadian Scholarship Trust Foundation.",
+                       category: .general,
+                       requirements: ["Canadian citizen/PR", "Post-secondary enrollment", "Financial need", "Academic achievement"]),
+            
+            Scholarship(name: "Canadian Beef Check-Off Scholarship",
+                       amount: 5000,
+                       deadline: canadianBeefDate,
+                       description: "Video submission format scholarship for students interested in agriculture and beef industry.",
+                       category: .stem,
+                       requirements: ["Video submission", "Agriculture/beef industry interest", "Canadian citizen/PR", "Creative presentation"]),
+            
+            Scholarship(name: "PIPSC Legacy Foundation Scholarships",
+                       amount: 3000,
+                       deadline: pipscLegacyDate,
+                       description: "For children and grandchildren of public service members.",
+                       category: .general,
+                       requirements: ["PIPSC member family", "Canadian citizen/PR", "Post-secondary enrollment", "Academic achievement"]),
+            
+            // Regional & Sector-Specific Awards
+            Scholarship(name: "MB & NWO Royal Canadian Legion Youth Scholarships & Bursaries",
+                       amount: 1000,
+                       deadline: royalCanadianLegionDate,
+                       description: "Scholarships and bursaries for students in Manitoba and Northwestern Ontario.",
+                       category: .general,
+                       requirements: ["Manitoba/Northwestern Ontario resident", "Canadian citizen/PR", "Academic achievement", "Financial need"]),
+            
+            Scholarship(name: "Westland Foundation Scholarships",
+                       amount: 2000,
+                       deadline: westlandFoundationDate,
+                       description: "Awards for students from inner-Winnipeg schools.",
+                       category: .general,
+                       requirements: ["Inner-Winnipeg school attendance", "Canadian citizen/PR", "Academic achievement", "Community involvement"]),
+        ])
+        
+        // --- User Provided Scholarships (2025-2026) ---
+    
+        let continuingEdDate = dateFormatter.date(from: "July 1, 2025")!
+        scholarships.append(Scholarship(
+            name: "Program for Continuing Education Grant",
+            amount: 4000,
+            deadline: continuingEdDate,
+            description: "Grant for students continuing their education.",
+            category: .general,
+            requirements: ["Continuing education"],
+            website: nil
+        ))
+
+        let atlasShruggedEssayDate = dateFormatter.date(from: "December 27, 2025")!
+        scholarships.append(Scholarship(
+            name: "Atlas Shrugged Essay Contest",
+            amount: 25000,
+            deadline: atlasShruggedEssayDate,
+            description: "Essay contest based on Ayn Rand's novel.",
+            category: .humanities,
+            requirements: ["Essay submission required"],
+            website: nil
+        ))
+
+    
+     
+
+        let horatioAlgerIndigenousDate = dateFormatter.date(from: "August 1, 2025")!
+        scholarships.append(Scholarship(
+            name: "Horatio Alger Indigenous Achievement Scholarship",
+            amount: 2500,
+            deadline: horatioAlgerIndigenousDate,
+            description: "Scholarship for Indigenous students demonstrating perseverance.",
+            category: .general,
+            requirements: ["Indigenous student"],
+            website: nil
+        ))
+
+        let kealanOssumDate = dateFormatter.date(from: "July 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "Kealan Ossum Scholarship Program",
+            amount: 1500,
+            deadline: kealanOssumDate,
+            description: "Scholarship program in memory of Kealan Ossum.",
+            category: .general,
+            requirements: ["See program details"],
+            website: nil
+        ))
+
+      
+
+        let torontoMassChoirDate = dateFormatter.date(from: "July 31, 2025")!
+        scholarships.append(Scholarship(
+            name: "Toronto Mass Choir Youth Scholarship Fund",
+            amount: 500,
+            deadline: torontoMassChoirDate,
+            description: "Scholarship for youth involved in choir/music.",
+            category: .arts,
+            requirements: ["Youth, choir/music involvement"],
+            website: nil
+        ))
+
+        let cfigNationalDate = dateFormatter.date(from: "July 14, 2025")!
+        scholarships.append(Scholarship(
+            name: "Canadian Federation of Independent Grocers National Scholarship Program",
+            amount: 15000,
+            deadline: cfigNationalDate,
+            description: "Scholarship for students in the grocery industry.",
+            category: .business,
+            requirements: ["Grocery industry involvement"],
+            website: nil
+        ))
+
+        let otaEducationDate = dateFormatter.date(from: "July 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "The OTA Education Foundation",
+            amount: 1500,
+            deadline: otaEducationDate,
+            description: "Education foundation scholarship.",
+            category: .general,
+            requirements: ["See foundation details"],
+            website: nil
+        ))
+
+        let mancapFoundationDate = dateFormatter.date(from: "July 31, 2025")!
+        scholarships.append(Scholarship(
+            name: "The ManCap Foundation 2024 Education Grant",
+            amount: 5000,
+            deadline: mancapFoundationDate,
+            description: "Education grant from the ManCap Foundation.",
+            category: .general,
+            requirements: ["See grant details"],
+            website: nil
+        ))
+
+        let buckhornFineArtDate = dateFormatter.date(from: "July 18, 2025")!
+        scholarships.append(Scholarship(
+            name: "Buckhorn Fine Art Award",
+            amount: 500,
+            deadline: buckhornFineArtDate,
+            description: "Award for fine art students.",
+            category: .arts,
+            requirements: ["Fine art student"],
+            website: nil
+        ))
+
+        let peoPceDate = dateFormatter.date(from: "August 31, 2025")!
+        scholarships.append(Scholarship(
+            name: "P.E.O. Program for Continuing Education (PCE)",
+            amount: 4000,
+            deadline: peoPceDate,
+            description: "Program for continuing education.",
+            category: .general,
+            requirements: ["Continuing education"],
+            website: nil
+        ))
+
+        let phylissMccarthyDate = dateFormatter.date(from: "July 23, 2025")!
+        scholarships.append(Scholarship(
+            name: "The Phyliss J. McCarthy Scholarship for Excellence in Writing",
+            amount: 1000,
+            deadline: phylissMccarthyDate,
+            description: "Scholarship for excellence in writing.",
+            category: .humanities,
+            requirements: ["Writing excellence"],
+            website: nil
+        ))
+
+        let dcciDisabilitiesDate = dateFormatter.date(from: "July 31, 2025")!
+        scholarships.append(Scholarship(
+            name: "DCCI Scholarship for Canadian Students with Disabilities",
+            amount: 1000,
+            deadline: dcciDisabilitiesDate,
+            description: "Scholarship for Canadian students with disabilities.",
+            category: .general,
+            requirements: ["Canadian student with disabilities"],
+            website: nil
+        ))
+
+        let cfigNational2Date = dateFormatter.date(from: "July 14, 2025")!
+        scholarships.append(Scholarship(
+            name: "CFIG National Scholarship",
+            amount: 15000,
+            deadline: cfigNational2Date,
+            description: "National scholarship from CFIG.",
+            category: .business,
+            requirements: ["See CFIG details"],
+            website: nil
+        ))
+
+        let petroCanadaIndigenousDate = dateFormatter.date(from: "July 1, 2025")!
+        scholarships.append(Scholarship(
+            name: "Petro-Canada Award for Indigenous High School Students",
+            amount: 750,
+            deadline: petroCanadaIndigenousDate,
+            description: "Award for Indigenous high school students.",
+            category: .general,
+            requirements: ["Indigenous high school student"],
+            website: nil
+        ))
+
+        let indspireBbfDate = dateFormatter.date(from: "August 1, 2025")!
+        scholarships.append(Scholarship(
+            name: "Building Brighter Futures: Bursaries, Scholarships, and Awards",
+            amount: 0,
+            deadline: indspireBbfDate,
+            description: "Various bursaries, scholarships, and awards.",
+            category: .general,
+            requirements: ["See program details"],
+            website: nil
+        ))
+
+        let monSheongJubileeDate = dateFormatter.date(from: "July 7, 2025")!
+        scholarships.append(Scholarship(
+            name: "Mon Sheong Foundation Golden Jubilee Scholarship",
+            amount: 4000,
+            deadline: monSheongJubileeDate,
+            description: "Golden Jubilee Scholarship from Mon Sheong Foundation.",
+            category: .general,
+            requirements: ["See foundation details"],
+            website: nil
+        ))
+
+        let chhaNlDate = dateFormatter.date(from: "July 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "The Canadian Hard of Hearing Association- Newfoundland and Labrador (CHHA-NL)",
+            amount: 1000,
+            deadline: chhaNlDate,
+            description: "Scholarship for hard of hearing students in Newfoundland and Labrador.",
+            category: .general,
+            requirements: ["Hard of hearing student, NL"],
+            website: nil
+        ))
+
+        let telusDiversityTechDate = dateFormatter.date(from: "August 5, 2025")!
+        scholarships.append(Scholarship(
+            name: "TELUS Diversity in Technology Scholarship",
+            amount: 5000,
+            deadline: telusDiversityTechDate,
+            description: "Diversity in technology scholarship from TELUS.",
+            category: .stem,
+            requirements: ["Diversity in tech"],
+            website: nil
+        ))
+
+        let chadBradleyDate = dateFormatter.date(from: "August 31, 2025")!
+        scholarships.append(Scholarship(
+            name: "Chad Bradley Scholarship Award",
+            amount: 3000,
+            deadline: chadBradleyDate,
+            description: "Scholarship award in memory of Chad Bradley.",
+            category: .general,
+            requirements: ["See award details"],
+            website: nil
+        ))
+
+       
+
+        let globalPerspectivesDate = dateFormatter.date(from: "August 27, 2025")!
+        scholarships.append(Scholarship(
+            name: "Global Perspectives Scholarship",
+            amount: 1000,
+            deadline: globalPerspectivesDate,
+            description: "Scholarship for students with a global perspective.",
+            category: .general,
+            requirements: ["Global perspective"],
+            website: nil
+        ))
+
+        let bill7AwardDate = dateFormatter.date(from: "August 2, 2024")!
+        scholarships.append(Scholarship(
+            name: "Bill 7 Award",
+            amount: 4000,
+            deadline: bill7AwardDate,
+            description: "Award for students in Ontario who identify as 2SLGBTQ+.",
+            category: .general,
+            requirements: ["Ontario resident", "2SLGBTQ+"],
+            website: nil
+        ))
+
+        let haywoodHunt7thDate = dateFormatter.date(from: "August 31, 2025")!
+        scholarships.append(Scholarship(
+            name: "Haywood Hunt 7th Annual Scholarship",
+            amount: 1000,
+            deadline: haywoodHunt7thDate,
+            description: "Annual scholarship from Haywood Hunt.",
+            category: .general,
+            requirements: ["See scholarship details"],
+            website: nil
+        ))
+
+        let castagraRoofingDate = dateFormatter.date(from: "August 29, 2025")!
+        scholarships.append(Scholarship(
+            name: "Castagra Roofing Scholarship Program",
+            amount: 1500,
+            deadline: castagraRoofingDate,
+            description: "Scholarship for students interested in roofing or construction.",
+            category: .general,
+            requirements: ["Interest in roofing/construction"],
+            website: nil
+        ))
+
+      
+      
+
+        let pharmicaIntlDate = dateFormatter.date(from: "August 4, 2025")!
+        scholarships.append(Scholarship(
+            name: "Pharmica International Scholarship Program",
+            amount: 1000,
+            deadline: pharmicaIntlDate,
+            description: "International scholarship from Pharmica.",
+            category: .general,
+            requirements: ["See program details"],
+            website: nil
+        ))
+
+        let confidentWritersEssayDate = dateFormatter.date(from: "August 9, 2025")!
+        scholarships.append(Scholarship(
+            name: "Confident Writers Scholarship Essay Contest",
+            amount: 700,
+            deadline: confidentWritersEssayDate,
+            description: "Essay contest for confident writers.",
+            category: .humanities,
+            requirements: ["Essay submission required"],
+            website: nil
+        ))
+
+        let visasForFutureDate = dateFormatter.date(from: "August 1, 2025")!
+        scholarships.append(Scholarship(
+            name: "Visas for Future Annual Scholarship",
+            amount: 1000,
+            deadline: visasForFutureDate,
+            description: "Annual scholarship from Visas for Future.",
+            category: .general,
+            requirements: ["See program details"],
+            website: nil
+        ))
+
+        let reflections2025Date = dateFormatter.date(from: "July 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "2025 Reflections Scholarship",
+            amount: 2000,
+            deadline: reflections2025Date,
+            description: "Reflections scholarship for 2025.",
+            category: .general,
+            requirements: ["See scholarship details"],
+            website: nil
+        ))
+
+        let opseuSefpoDate = dateFormatter.date(from: "July 31, 2025")!
+        scholarships.append(Scholarship(
+            name: "OPSEU/SEFPO's annual scholarships",
+            amount: 0,
+            deadline: opseuSefpoDate,
+            description: "Various annual scholarships from OPSEU/SEFPO.",
+            category: .general,
+            requirements: ["See OPSEU/SEFPO details"],
+            website: nil
+        ))
+
+    
+        let strikeGroupDate = dateFormatter.date(from: "September 30, 2025")!
+        scholarships.append(Scholarship(
+            name: "Strike Group Western Canadian Scholarship",
+            amount: 2000,
+            deadline: strikeGroupDate,
+            description: "Western Canadian scholarship from Strike Group.",
+            category: .general,
+            requirements: ["See scholarship details"],
+            website: nil
+        ))
+
+        let tcfCanadaDate = dateFormatter.date(from: "August 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "TCF Canada Youth Bursary Program",
+            amount: 3000,
+            deadline: tcfCanadaDate,
+            description: "Youth bursary program from TCF Canada.",
+            category: .general,
+            requirements: ["See program details"],
+            website: nil
+        ))
+
+        let scottLandLeaseDate = dateFormatter.date(from: "July 25, 2025")!
+        scholarships.append(Scholarship(
+            name: "The $1,000 Scott Land & Lease Scholarship",
+            amount: 1000,
+            deadline: scottLandLeaseDate,
+            description: "Scholarship from Scott Land & Lease.",
+            category: .general,
+            requirements: ["See scholarship details"],
+            website: nil
+        ))
+
+       
+
+      
+
+      
+
+        let languageCertDate = dateFormatter.date(from: "September 9, 2024")!
+        scholarships.append(Scholarship(
+            name: "LanguageCert University and College Pathways Scholarship",
+            amount: 1000,
+            deadline: languageCertDate,
+            description: "Pathways scholarship from LanguageCert.",
+            category: .general,
+            requirements: ["See scholarship details"],
+            website: nil
+        ))
+
+        let poetsBursaryDate = dateFormatter.date(from: "September 8, 2024")!
+        scholarships.append(Scholarship(
+            name: "The League of Canadian Poets Annual Poetry Bursary",
+            amount: 2000,
+            deadline: poetsBursaryDate,
+            description: "Annual poetry bursary from the League of Canadian Poets.",
+            category: .arts,
+            requirements: ["Poetry submission required"],
+            website: nil
+        ))
+
+        let merdonHoskingDate = dateFormatter.date(from: "September 1, 2025")!
+        scholarships.append(Scholarship(
+            name: "The Merdon Hosking Youth Scholarship",
+            amount: 2500,
+            deadline: merdonHoskingDate,
+            description: "Youth scholarship in memory of Merdon Hosking.",
+            category: .general,
+            requirements: ["See scholarship details"],
+            website: nil
+        ))
+
+
+        let ctaaDate = dateFormatter.date(from: "September 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "CTAA Scholarships",
+            amount: 2000,
+            deadline: ctaaDate,
+            description: "Scholarships from the Canadian Transportation and Allied Association.",
+            category: .general,
+            requirements: ["See CTAA details"],
+            website: nil
+        ))
+
+        let ufcwBdmDate = dateFormatter.date(from: "September 30, 2025")!
+        scholarships.append(Scholarship(
+            name: "UFCW Canada – BDM Scholarships",
+            amount: 1000,
+            deadline: ufcwBdmDate,
+            description: "BDM scholarships from UFCW Canada.",
+            category: .general,
+            requirements: ["See UFCW details"],
+            website: nil
+        ))
+
+      
+
+        let jamesLeeDate = dateFormatter.date(from: "September 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "James Lee Foundation Scholarships",
+            amount: 5000,
+            deadline: jamesLeeDate,
+            description: "Scholarships from the James Lee Foundation.",
+            category: .general,
+            requirements: ["See foundation details"],
+            website: nil
+        ))
+
+        let savvyNewCanadiansDate = dateFormatter.date(from: "September 22, 2025")!
+        scholarships.append(Scholarship(
+            name: "Savvy New Canadians Financial Literacy Scholarship",
+            amount: 1000,
+            deadline: savvyNewCanadiansDate,
+            description: "Scholarship for new Canadians focusing on financial literacy.",
+            category: .general,
+            requirements: ["New Canadian", "Financial literacy interest"],
+            website: nil
+        ))
+
+        let claudetteSavariaDate = dateFormatter.date(from: "September 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "2025 Claudette Savaria Bursary",
+            amount: 500,
+            deadline: claudetteSavariaDate,
+            description: "Bursary in memory of Claudette Savaria.",
+            category: .general,
+            requirements: ["See bursary details"],
+            website: nil
+        ))
+
+        let tanyaHoweDamsgaardDate = dateFormatter.date(from: "September 15, 2025")!
+        scholarships.append(Scholarship(
+            name: "Tanya Howe Damsgaard Memorial Scholarship",
+            amount: 2000,
+            deadline: tanyaHoweDamsgaardDate,
+            description: "Memorial scholarship in memory of Tanya Howe Damsgaard.",
+            category: .general,
+            requirements: ["See scholarship details"],
+            website: nil
+        ))
+
+        let donaldCurrenDate = dateFormatter.date(from: "September 30, 2025")!
+        scholarships.append(Scholarship(
+            name: "The Donald E. Curren Scholarship Fund",
+            amount: 0,
+            deadline: donaldCurrenDate,
+            description: "Scholarship fund in memory of Donald E. Curren.",
+            category: .general,
+            requirements: ["See fund details"],
+            website: nil
+        ))
+
+        let wanderersTrustDate = dateFormatter.date(from: "September 30, 2025")!
+        scholarships.append(Scholarship(
+            name: "The Wanderer's Trust Scholarship Fund",
+            amount: 0,
+            deadline: wanderersTrustDate,
+            description: "Scholarship fund from The Wanderer's Trust.",
+            category: .general,
+            requirements: ["See trust details"],
+            website: nil
+        ))
+
+        let ontarioCerebralPalsyDate = dateFormatter.date(from: "September 20, 2025")!
+        scholarships.append(Scholarship(
+            name: "Ontario Federation for Cerebral Palsy Scholarships",
+            amount: 500,
+            deadline: ontarioCerebralPalsyDate,
+            description: "Scholarships for students with cerebral palsy in Ontario.",
+            category: .general,
+            requirements: ["Cerebral palsy", "Ontario resident"],
+            website: nil
+        ))
+
+        let creativeBiolabsDate = dateFormatter.date(from: "September 30, 2025")!
+        scholarships.append(Scholarship(
+            name: "Creative Biolabs Scholarship Program",
+            amount: 1000,
+            deadline: creativeBiolabsDate,
+            description: "Scholarship program from Creative Biolabs.",
+            category: .stem,
+            requirements: ["See program details"],
+            website: nil
+        ))
+        
         return scholarships
     }
 } 
