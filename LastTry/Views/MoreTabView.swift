@@ -29,9 +29,6 @@ struct MoreTabView: View {
                     NavigationLink(destination: LiveActivityFeedView()) {
                         MoreCardView(title: "Live Activity Feed", icon: "bolt.heart.fill", color: .pink)
                     }
-                    NavigationLink(destination: AchievementConstellationsView()) {
-                        MoreCardView(title: "Achievement Constellations", icon: "star.fill", color: .yellow)
-                    }
                     NavigationLink(destination: FinancialPlanningView()) {
                         MoreCardView(title: "Financial Planning", icon: "dollarsign.circle.fill", color: .green)
                     }
