@@ -6,6 +6,8 @@ struct ScholarshipData {
         dateFormatter.dateFormat = "MMMM d, yyyy"
         
         var scholarships: [Scholarship] = []
+
+        // new changes here 
         
         // Convert string dates to Date objects
         let scholarTreeDate = dateFormatter.date(from: "December 31, 2024")!
