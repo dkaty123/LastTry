@@ -1,4 +1,4 @@
-# LastTry: Space-Themed Scholarship App
+# ScholarSwiper: Space-Themed Scholarship App
 
 LastTry is a visually engaging, space-themed scholarship app built with SwiftUI. It helps students discover, track, and manage scholarships, applications, and finances—all in a fun, interactive, and modern interface.
 
